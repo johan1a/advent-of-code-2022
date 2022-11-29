@@ -6,3 +6,5 @@ lazy val root = (project in file(".")).
     name := "advent-of-code-2022",
     libraryDependencies += "org.scalameta" %% "munit" % "0.7.29" % Test
   )
+
+(Test / test) := (Test / test).dependsOn(Test / scalafmtCheck).value
