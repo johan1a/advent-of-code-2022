@@ -11,17 +11,6 @@ object Day01 {
   }
 
   private def parseElves(input: Seq[String]): Seq[Int] = {
-    var i = 0
-    var elves = Seq[Int]()
-    while (i < input.size) {
-      var elf = 0
-      while (i < input.size && input(i).nonEmpty) {
-        elf += input(i).toInt
-        i += 1
-      }
-      elves = elves :+ elf
-      i += 1
-    }
-    elves
+    Utils.split(input).map(elf => elf.map(_.toInt).sum)
   }
 }
