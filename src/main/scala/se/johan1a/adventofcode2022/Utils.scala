@@ -33,4 +33,34 @@ object Utils {
     groups
   }
 
+  def inRange(pos: Vec2, min: Vec2, max: Vec2): Boolean =
+    pos.x >= min.x && pos.x < max.x && pos.y >= min.y && pos.y < max.y
+
+  def neighbors(
+      pos: Vec2,
+      min: Vec2 = Vec2(0, 0),
+      max: Vec2 = Vec2(Long.MaxValue, Long.MaxValue),
+      includeDiagonals: Boolean = true
+  ): Seq[Vec2] = {
+    val offsets: Seq[Vec2] = Seq(
+      Vec2(0, 1),
+      Vec2(0, -1),
+      Vec2(1, 0),
+      Vec2(-1, 0)
+    ) ++ (if (includeDiagonals) {
+            Seq(
+              Vec2(-1, -1),
+              Vec2(1, -1),
+              Vec2(-1, 1),
+              Vec2(1, 1)
+            )
+          } else {
+            Seq.empty
+          })
+
+    offsets
+      .map(offset => add(pos, offset))
+      .filter(inRange(_, min, max))
+  }
+
 }

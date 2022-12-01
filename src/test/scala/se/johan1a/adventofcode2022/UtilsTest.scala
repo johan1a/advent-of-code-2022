@@ -40,4 +40,40 @@ class UtilsTest extends munit.FunSuite {
     assertEquals(sub(a, b), Vec3(-2, -2, 4))
   }
 
+  test("neighbors") {
+    val expected = Seq(
+      Vec2(10, 21),
+      Vec2(10, 19),
+      Vec2(11, 20),
+      Vec2(9, 20),
+      Vec2(9, 19),
+      Vec2(11, 19),
+      Vec2(9, 21),
+      Vec2(11, 21)
+    )
+
+    assertEquals(neighbors(Vec2(10, 20)), expected)
+  }
+
+  test("neighbors bounded min") {
+    val expected = Seq(
+      Vec2(10, 21),
+      Vec2(10, 19),
+      Vec2(11, 20),
+      Vec2(11, 19),
+      Vec2(11, 21)
+    )
+
+    assertEquals(neighbors(Vec2(10, 20), min = Vec2(10, 19)), expected)
+  }
+
+  test("neighbors bounded max") {
+    val expected = Seq(
+      Vec2(9, 20),
+      Vec2(9, 19)
+    )
+
+    assertEquals(neighbors(Vec2(10, 20), max = Vec2(10, 21)), expected)
+  }
+
 }
