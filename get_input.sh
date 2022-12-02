@@ -1,5 +1,7 @@
 #!/usr/bin/fish
 
+set userAgent 'httpie (+https://gitlab.com/johan1a/advent-of-code-2022/)'
+
 mkdir -p ./info
 
 set year 2022
@@ -38,13 +40,13 @@ set existingInputFileSize (wc -l ./src/test/resources/day$paddedDay/input.txt | 
 
 if [ $existingInputFileSize -eq "0" ];
   echo Downloading input...
-  http "https://adventofcode.com/$year/day/$day/input" cookie:session=$session > ./src/test/resources/day$paddedDay/input.txt
+  http "https://adventofcode.com/$year/day/$day/input" cookie:session=$session User-Agent:$userAgent > ./src/test/resources/day$paddedDay/input.txt
   echo Done
 end
 
 if [ ! -f "./info/day$paddedDay.html" ];
   echo Downloading info...
-  http "https://adventofcode.com/$year/day/$day" cookie:session=$session > ./info/day$paddedDay.html
+  http "https://adventofcode.com/$year/day/$day" cookie:session=$session User-Agent:$userAgent > ./info/day$paddedDay.html
   echo Done...
 end
 
