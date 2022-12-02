@@ -1,5 +1,7 @@
 package se.johan1a.adventofcode2022
 
+import scala.collection.mutable.ArrayBuffer
+
 object Utils {
 
   case class Vec2(x: Long, y: Long)
@@ -10,6 +12,21 @@ object Utils {
 
   def add(a: Vec3, b: Vec3): Vec3 = Vec3(a.x + b.x, a.y + b.y, a.z + b.z)
   def sub(a: Vec3, b: Vec3): Vec3 = Vec3(a.x - b.x, a.y - b.y, a.z - b.z)
+
+  def manhattan(a: Vec2, b: Vec2): Long = {
+    val diff = sub(a, b)
+    diff.x.abs + diff.y.abs
+  }
+
+  def manhattan(a: Vec3, b: Vec3): Long = {
+    val diff = sub(a, b)
+    diff.x.abs + diff.y.abs + diff.z.abs
+  }
+
+  def numbers(line: String): Seq[Long] = {
+    val regex = "[-]?\\d+".r
+    regex.findAllMatchIn(line).toSeq.map(_.group(0).toLong)
+  }
 
   def split(
       input: Seq[String],
@@ -62,5 +79,11 @@ object Utils {
       .map(offset => add(pos, offset))
       .filter(inRange(_, min, max))
   }
+
+  def makeGrid(lines: Seq[String]): ArrayBuffer[ArrayBuffer[Char]] = {
+    new ArrayBuffer().appendAll(lines.map(l => new ArrayBuffer().appendAll(l)))
+  }
+
+  def max(grid: Array[Array[Char]]): Vec2 = Vec2(grid.head.size, grid.size)
 
 }

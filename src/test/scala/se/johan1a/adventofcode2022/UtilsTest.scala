@@ -1,5 +1,6 @@
 package se.johan1a.adventofcode2022
 
+import scala.collection.mutable.ArrayBuffer
 import Utils._
 
 class UtilsTest extends munit.FunSuite {
@@ -76,4 +77,29 @@ class UtilsTest extends munit.FunSuite {
     assertEquals(neighbors(Vec2(10, 20), max = Vec2(10, 21)), expected)
   }
 
+  test("manhattan") {
+    assertEquals(manhattan(Vec2(1, 1), Vec2(-1, -1)), 4L)
+  }
+
+  test("manhattan 3D") {
+    assertEquals(manhattan(Vec3(0, 0, 0), Vec3(-1, -1, -1)), 3L)
+  }
+
+  test("numbers") {
+    val input = "x 1 btnesoat u-901 eismoa xmeit. 92010 ozxmeviorm 12390 0"
+    assertEquals(numbers(input), Seq(1L, -901, 92010, 12390, 0))
+  }
+
+  test("grid") {
+    val grid = makeGrid(Seq("#..", "..#", "..."))
+
+    assertEquals(
+      grid,
+      ArrayBuffer(
+        ArrayBuffer('#', '.', '.'),
+        ArrayBuffer('.', '.', '#'),
+        ArrayBuffer('.', '.', '.')
+      )
+    )
+  }
 }
