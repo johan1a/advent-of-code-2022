@@ -13,16 +13,6 @@ object Day03 {
       .sum
   }
 
-  private def priority(l: String): Int = {
-    if (l >= "a" && l <= "z") {
-      l.toCharArray().head.toInt - 'a'.toInt + 1
-    } else if (l >= "A" && l <= "Z") {
-      l.toCharArray().head.toInt - 'A'.toInt + 27
-    } else {
-      ???
-    }
-  }
-
   def part2(input: Seq[String]): Int = {
     input
       .grouped(3)
@@ -36,4 +26,15 @@ object Day03 {
       })
       .sum
   }
+
+  private def priority(l: String): Int = {
+    if (l >= "a" && l <= "z") {
+      l.toCharArray().head.toInt - 'a'.toInt + 1
+    } else if (l >= "A" && l <= "Z") {
+      l.toCharArray().head.toInt - 'A'.toInt + 27
+    } else {
+      ???
+    }
+  }
+
 }
