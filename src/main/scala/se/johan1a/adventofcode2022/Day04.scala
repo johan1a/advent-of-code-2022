@@ -25,12 +25,11 @@ object Day04 {
         val split = line.split(",")
         val a = split.head.split("-").map(_.toLong)
         val b = split.last.split("-").map(_.toLong)
-        val overlap = !(a.head > b.last || a.last < b.head || b.head > a.last || b.last < a.head)
-        if(overlap){
-          println(s"a: $a, b: $b")
-        }
+        val overlap =
+          !(a.head > b.last || a.last < b.head || b.head > a.last || b.last < a.head)
 
         overlap
-      }).size
+      })
+      .size
   }
 }
