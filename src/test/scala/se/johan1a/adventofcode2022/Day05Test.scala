@@ -16,8 +16,8 @@ class Day05Test extends munit.FunSuite {
     assertEquals(Day05.part2(getInput("day05/test0.txt")), "MCD")
   }
 
-  test("Part 2 test") {
-    assertEquals(Day05.part2(getInput("day05/input.txt")), "")
+  test("Part 2") {
+    assertEquals(Day05.part2(getInput("day05/input.txt")), "PRTTGRFPB")
   }
 
 }
