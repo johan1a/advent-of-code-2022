@@ -17,25 +17,21 @@ object Day05 {
       combine: (Seq[Char], Seq[Char]) => Seq[Char]
   ): String = {
     var (stacks, instructions) = parse(input)
-    instructions.foreach {
-      case (instruction) => {
-        val (n, src, dest) = (
-          instruction(0).toInt,
-          instruction(1).toInt - 1,
-          instruction(2).toInt - 1
-        )
-        val sourceStack = stacks(src)
-        val top = sourceStack.drop(sourceStack.size - n)
-        stacks = stacks.updated(src, stacks(src).take(sourceStack.size - n))
+    instructions.foreach(instruction => {
+      val (n, src, dest) = (
+        instruction(0).toInt,
+        instruction(1).toInt - 1,
+        instruction(2).toInt - 1
+      )
+      val sourceStack = stacks(src)
+      val top = sourceStack.drop(sourceStack.size - n)
+      stacks = stacks.updated(src, stacks(src).take(sourceStack.size - n))
 
-        val destStack = stacks(dest)
-        stacks = stacks.updated(dest, combine(destStack, top))
-      }
-    }
+      val destStack = stacks(dest)
+      stacks = stacks.updated(dest, combine(destStack, top))
+    })
     stacks.keys.toSeq.sorted
-      .map(key => {
-        stacks(key).last
-      })
+      .map(key => stacks(key).last)
       .mkString
   }
 
@@ -52,10 +48,8 @@ object Day05 {
           val stack = stacks.getOrElse(index, Seq())
           stacks = stacks.updated(index, line.charAt(j + 1) +: stack)
         }
-
         j += 1
       }
-
       i += 1
     }
     i += 2
