@@ -7,15 +7,21 @@ object Day07 {
   case class File(name: String, size: Long)
   case class Dir(
       name: String,
+      absoluteName: String,
       dirs: Buffer[Dir],
       files: Buffer[File],
       var parent: Dir
   )
 
   def part1(originalInput: Seq[String]): Long = {
+    val sizes = getSizes(originalInput)
+    sizes.filter(_._2 <= 100000).map(_._2).sum
+  }
+
+  def getSizes(originalInput: Seq[String]): Seq[(String, Long, String)] = {
     val input = scala.collection.mutable.ArrayBuffer[String]()
     input.addAll(originalInput)
-    var root = Dir("/", Buffer.empty, Buffer.empty, null)
+    var root = Dir("/", "/", Buffer.empty, Buffer.empty, null)
     var currentDir = root
 
     input.foreach { line =>
@@ -33,7 +39,12 @@ object Day07 {
         // No-op
         case dir if dir.startsWith("dir ") =>
           val name = dir.split("dir ").last.trim
-          val newDir = Dir(name, Buffer.empty, Buffer.empty, currentDir)
+          val absoluteName = if(currentDir.name == "/"){
+            "/" + name
+          } else {
+            currentDir.parent.absoluteName + "/" + name
+          }
+          val newDir = Dir(name, absoluteName, Buffer.empty, Buffer.empty, currentDir)
           currentDir.dirs.addOne(newDir)
         case file =>
           val split = file.split(" ")
@@ -42,23 +53,20 @@ object Day07 {
           currentDir.files.addOne(File(name, size))
       }
     }
-
     printTree(root)
 
-    val sizes = findSize(root)
-    println(sizes)
-    println(sizes.size)
-    sizes.filter(_._2 <= 100000).map(_._2).sum
+    findSize(root)
   }
 
-  private def findSize(dir: Dir): Seq[(String, Long)] = {
+  private def findSize(dir: Dir): Seq[(String, Long, String)] = {
     val filesSize = dir.files.map(_.size).sum
     val children = dir.dirs.flatMap(findSize)
+
     val childrenTotalSize = children
-      .filter(c => dir.dirs.map(_.name).contains(c._1))
+      .filter(c => dir.dirs.map(_.absoluteName).contains(c._3))
       .map(c => c._2)
       .sum
-    Seq((dir.name, filesSize + childrenTotalSize)) ++ children
+    Seq((dir.name, filesSize + childrenTotalSize, dir.absoluteName)) ++ children
   }
 
   private def printTree(node: Dir, indent: String = ""): Unit = {
@@ -71,7 +79,20 @@ object Day07 {
     })
   }
 
-  def part2(input: Seq[String]): Int = {
-    -1
+  def part2(input: Seq[String]): Long = {
+    val totalSpace = 70000000L
+    val unusedSpaceNeeded = 30000000L
+
+
+    val sizes = getSizes(input)
+    println(sizes)
+    val usedSpace = sizes.find(_._1 == "/").map(_._2).get
+    val unusedSpace = totalSpace - usedSpace
+    val spaceToFreeUp = unusedSpaceNeeded - unusedSpace
+    println(s"usedSpace: $usedSpace, unusedSpace: $unusedSpace, spaceToFreeUp: $spaceToFreeUp")
+
+    println(sizes.sortBy(_._2).filter(_._2 >= spaceToFreeUp))
+
+    sizes.sortBy(_._2).find(_._2 > spaceToFreeUp).map(_._2).get
   }
 }

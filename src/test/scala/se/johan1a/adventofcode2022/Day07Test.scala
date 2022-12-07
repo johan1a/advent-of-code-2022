@@ -12,13 +12,16 @@ class Day07Test extends munit.FunSuite {
     assertEquals(Day07.part1(getInput("day07/test1.txt")), 1000L)
   }
 
-  // too low 1816826
   test("Part 1") {
-    assertEquals(Day07.part1(getInput("day07/input.txt")), 1L)
+    assertEquals(Day07.part1(getInput("day07/input.txt")), 1915606L)
   }
 
   test("Part 2") {
-    assertEquals(Day07.part2(getInput("day07/input.txt")), -1)
+    assertEquals(Day07.part2(getInput("day07/test0.txt")), 24933642L)
+  }
+
+  test("Part 2") {
+    assertEquals(Day07.part2(getInput("day07/input.txt")), -1L)
   }
 
 }
