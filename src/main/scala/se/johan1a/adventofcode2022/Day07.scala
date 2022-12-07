@@ -18,6 +18,18 @@ object Day07 {
     sizes.filter(_._2 <= 100000).map(_._2).sum
   }
 
+  def part2(input: Seq[String]): Long = {
+    val totalSpace = 70000000L
+    val unusedSpaceNeeded = 30000000L
+
+    val sizes = getSizes(input)
+    val usedSpace = sizes.find(_._1 == "/").map(_._2).get
+    val unusedSpace = totalSpace - usedSpace
+    val spaceToFreeUp = unusedSpaceNeeded - unusedSpace
+
+    sizes.sortBy(_._2).find(_._2 > spaceToFreeUp).map(_._2).get
+  }
+
   def getSizes(originalInput: Seq[String]): Seq[(String, Long, String)] = {
     val input = scala.collection.mutable.ArrayBuffer[String]()
     input.addAll(originalInput)
@@ -39,12 +51,13 @@ object Day07 {
         // No-op
         case dir if dir.startsWith("dir ") =>
           val name = dir.split("dir ").last.trim
-          val absoluteName = if(currentDir.name == "/"){
+          val absoluteName = if (currentDir.name == "/") {
             "/" + name
           } else {
             currentDir.parent.absoluteName + "/" + name
           }
-          val newDir = Dir(name, absoluteName, Buffer.empty, Buffer.empty, currentDir)
+          val newDir =
+            Dir(name, absoluteName, Buffer.empty, Buffer.empty, currentDir)
           currentDir.dirs.addOne(newDir)
         case file =>
           val split = file.split(" ")
@@ -53,7 +66,6 @@ object Day07 {
           currentDir.files.addOne(File(name, size))
       }
     }
-    printTree(root)
 
     findSize(root)
   }
@@ -77,22 +89,5 @@ object Day07 {
     node.files.map(file => {
       println(s"- $indent  ${file.name} (file, size=${file.size})")
     })
-  }
-
-  def part2(input: Seq[String]): Long = {
-    val totalSpace = 70000000L
-    val unusedSpaceNeeded = 30000000L
-
-
-    val sizes = getSizes(input)
-    println(sizes)
-    val usedSpace = sizes.find(_._1 == "/").map(_._2).get
-    val unusedSpace = totalSpace - usedSpace
-    val spaceToFreeUp = unusedSpaceNeeded - unusedSpace
-    println(s"usedSpace: $usedSpace, unusedSpace: $unusedSpace, spaceToFreeUp: $spaceToFreeUp")
-
-    println(sizes.sortBy(_._2).filter(_._2 >= spaceToFreeUp))
-
-    sizes.sortBy(_._2).find(_._2 > spaceToFreeUp).map(_._2).get
   }
 }
