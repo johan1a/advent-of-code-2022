@@ -88,7 +88,6 @@ object Day08 {
           }
           x1 += 1
         }
-        println(size)
         product = product * size
 
         y1 = y
@@ -101,7 +100,6 @@ object Day08 {
           }
           x1 -= 1
         }
-        println(size)
         product = product * size
 
         y1 = y + 1
@@ -114,7 +112,6 @@ object Day08 {
           }
           y1 += 1
         }
-        println(size)
         product = product * size
 
         y1 = y - 1
@@ -127,10 +124,8 @@ object Day08 {
           }
           y1 -= 1
         }
-        println(size)
         product = product * size
 
-        println(s"x: $x, y: $y, product: $product")
         if (product > best) {
           best = product
         }

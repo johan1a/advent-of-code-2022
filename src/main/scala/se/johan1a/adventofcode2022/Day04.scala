@@ -11,7 +11,8 @@ object Day04 {
         val a = split.head.split("-").map(_.toLong)
         val b = split.last.split("-").map(_.toLong)
         (a.head >= b.head && a.last <= b.last) || (b.head >= a.head && b.last <= a.last)
-      }).size
+      })
+      .size
   }
 
   def part2(input: Seq[String]): Int = {
