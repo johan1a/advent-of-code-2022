@@ -84,6 +84,100 @@ object Utils {
     new ArrayBuffer().appendAll(lines.map(l => new ArrayBuffer().appendAll(l)))
   }
 
-  def max(grid: Array[Array[Char]]): Vec2 = Vec2(grid.head.size, grid.size)
+  def getMax(grid: ArrayBuffer[ArrayBuffer[Char]]): Vec2 =
+    Vec2(grid.head.size, grid.size)
+
+  def allPositions(grid: ArrayBuffer[ArrayBuffer[Char]]): Seq[Vec2] = {
+    0.until(grid.size).flatMap { y =>
+      0.until(grid.head.size).map { x =>
+        Vec2(x, y)
+      }
+    }
+  }
+
+  def straightPathsFromOutside(
+      grid: ArrayBuffer[ArrayBuffer[Char]]
+  ): Seq[Seq[Seq[Vec2]]] = {
+    val ySize = grid.size
+    val xSize = grid.head.size
+    val leftToRight = 0
+      .until(ySize)
+      .map(y => {
+        0.until(xSize)
+          .map(x => {
+            Vec2(x, y)
+          })
+      })
+    val rightToLeft = 0
+      .until(ySize)
+      .map(y => {
+        0.until(xSize)
+          .reverse
+          .map(x => {
+            Vec2(x, y)
+          })
+      })
+    val topToBottom = 0
+      .until(xSize)
+      .map(x => {
+        0.until(ySize)
+          .map(y => {
+            Vec2(x, y)
+          })
+      })
+    val bottomToTop = 0
+      .until(xSize)
+      .map(x => {
+        0.until(ySize)
+          .reverse
+          .map(y => {
+            Vec2(x, y)
+          })
+      })
+    Seq(leftToRight, rightToLeft, topToBottom, bottomToTop)
+  }
+
+  def straightPathsFromPos(
+      grid: ArrayBuffer[ArrayBuffer[Char]],
+      pos: Vec2
+  ): Seq[Seq[Vec2]] = {
+    val ySize = grid.size
+    val xSize = grid.head.size
+
+    val min = Vec2(0, 0)
+    val max = getMax(grid)
+
+    val right = (pos.x + 1)
+      .until(xSize)
+      .map(x => {
+        Vec2(x, pos.y)
+      })
+      .filter(p => inRange(p, min, max))
+
+    val left = 0
+      .until(pos.x.toInt)
+      .reverse
+      .map(x => {
+        Vec2(x, pos.y)
+      })
+      .filter(p => inRange(p, min, max))
+
+    val down = (pos.y + 1)
+      .until(ySize)
+      .map(y => {
+        Vec2(pos.x, y)
+      })
+      .filter(p => inRange(p, min, max))
+
+    val up = 0
+      .until(pos.y.toInt)
+      .reverse
+      .map(y => {
+        Vec2(pos.x, y)
+      })
+      .filter(p => inRange(p, min, max))
+
+    Seq(right, left, down, up)
+  }
 
 }
