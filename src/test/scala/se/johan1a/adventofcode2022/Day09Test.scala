@@ -4,6 +4,10 @@ import se.johan1a.adventofcode2022.TestInputUtil.getInput
 
 class Day09Test extends munit.FunSuite {
 
+  test("Part 1 test") {
+    assertEquals(Day09.part1(getInput("day09/test0.txt")), 13)
+  }
+
   test("Part 1") {
     assertEquals(Day09.part1(getInput("day09/input.txt")), -1)
   }

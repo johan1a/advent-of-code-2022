@@ -55,7 +55,7 @@ object Utils {
 
   def neighbors(
       pos: Vec2,
-      min: Vec2 = Vec2(0, 0),
+      min: Vec2 = Vec2(Long.MinValue, Long.MinValue),
       max: Vec2 = Vec2(Long.MaxValue, Long.MaxValue),
       includeDiagonals: Boolean = true
   ): Seq[Vec2] = {
