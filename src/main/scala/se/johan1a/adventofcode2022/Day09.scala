@@ -62,12 +62,9 @@ object Day09 {
           val tailPos = knots(i)
           val newTailPos = moveCloserTo(tailPos, pos)
           knots(i) = newTailPos
-          println(s"i:$i, pos: $pos, tailPos: $tailPos, newTailPos: $newTailPos")
           i += 1
         }
         seen = seen + knots.last
-        println()
-        knots.foreach(println)
       }
     }
 
