@@ -9,9 +9,24 @@ object Utils {
 
   def add(a: Vec2, b: Vec2): Vec2 = Vec2(a.x + b.x, a.y + b.y)
   def sub(a: Vec2, b: Vec2): Vec2 = Vec2(a.x - b.x, a.y - b.y)
+  def sign(vec: Vec2): Vec2 = Vec2(vec.x.sign, vec.y.sign)
 
   def add(a: Vec3, b: Vec3): Vec3 = Vec3(a.x + b.x, a.y + b.y, a.z + b.z)
   def sub(a: Vec3, b: Vec3): Vec3 = Vec3(a.x - b.x, a.y - b.y, a.z - b.z)
+  def sign(vec: Vec3): Vec3 = Vec3(vec.x.sign, vec.y.sign, vec.z.sign)
+
+  def move(pos: Vec2, dir: String): Vec2 = {
+    dir match {
+      case "U" =>
+        Vec2(pos.x, pos.y - 1)
+      case "D" =>
+        Vec2(pos.x, pos.y + 1)
+      case "L" =>
+        Vec2(pos.x - 1, pos.y)
+      case "R" =>
+        Vec2(pos.x + 1, pos.y)
+    }
+  }
 
   def manhattan(a: Vec2, b: Vec2): Long = {
     val diff = sub(a, b)
