@@ -22,14 +22,10 @@ object Day09 {
           0.until(n.toInt).map { _ =>
             knots(0) = move(knots.head, dir)
             knots.zipWithIndex.drop(1).foreach { case (knot, i) =>
-              if (i == 0) {
-                knot
-              } else {
-                val pos = knots(i - 1)
-                val tailPos = knots(i)
-                val newTailPos = moveCloserTo(tailPos, pos)
-                knots(i) = newTailPos
-              }
+              val pos = knots(i - 1)
+              val tailPos = knots(i)
+              val newTailPos = moveCloserTo(tailPos, pos)
+              knots(i) = newTailPos
             }
             seen = seen + knots.last
           }
