@@ -4,7 +4,7 @@ import scala.collection.mutable.Queue
 
 object Day10 {
 
-  case class Effect(var i: Int, n: Int)
+  case class Effect(var ticksLeft: Int, amountToAdd: Int)
 
   def part1(input: Seq[String]): Int = {
     solve(input)._1
@@ -47,11 +47,11 @@ object Day10 {
       }
 
       if (queue.nonEmpty) {
-        queue.head.i -= 1
+        queue.head.ticksLeft -= 1
       }
-      if (queue.nonEmpty && queue.head.i == 0) {
+      if (queue.nonEmpty && queue.head.ticksLeft == 0) {
         val effect = queue.dequeue()
-        x += effect.n
+        x += effect.amountToAdd
       }
 
       i += 1
