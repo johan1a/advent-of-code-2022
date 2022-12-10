@@ -17,11 +17,17 @@ class Day10Test extends munit.FunSuite {
   }
 
   test("Part 2 test") {
-    assertEquals(Day10.part2(getInput("day10/test0.txt")), getInput("day10/test0.output.txt"))
+    assertEquals(
+      Day10.part2(getInput("day10/test0.txt")),
+      getInput("day10/test0.output.txt")
+    )
   }
 
   test("Part 2") {
-    assertEquals(Day10.part2(getInput("day10/input.txt")), getInput("day10/input.output.txt"))
+    assertEquals(
+      Day10.part2(getInput("day10/input.txt")),
+      getInput("day10/input.output.txt")
+    )
   }
 
 }
