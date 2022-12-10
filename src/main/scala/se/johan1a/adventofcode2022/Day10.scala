@@ -1,5 +1,7 @@
 package se.johan1a.adventofcode2022
 
+import scala.collection.mutable.Queue
+
 object Day10 {
 
   case class Effect(var i: Int, n: Int)
@@ -16,7 +18,7 @@ object Day10 {
     val screenWidth = 40
     var x = 1
     var i = 1
-    var queue = Seq[Effect]()
+    var queue = Queue[Effect]()
     var pixels = Seq[String]()
     var totalSignalStrength = 0
 
@@ -25,10 +27,10 @@ object Day10 {
         val line = input(i - 1)
         line match {
           case "noop" =>
-            queue = queue :+ Effect(1, 0)
+            queue += Effect(1, 0)
           case s"addx $n" =>
             val k = n.toInt
-            queue = queue :+ Effect(2, k)
+            queue += Effect(2, k)
         }
       }
 
@@ -48,8 +50,7 @@ object Day10 {
         queue.head.i -= 1
       }
       if (queue.nonEmpty && queue.head.i == 0) {
-        val effect = queue.head
-        queue = queue.drop(1)
+        val effect = queue.dequeue()
         x += effect.n
       }
 
