@@ -1,6 +1,7 @@
 package se.johan1a.adventofcode2022
 
 import Utils._
+import scala.collection.mutable.Queue
 
 object Day11 {
 
@@ -10,8 +11,7 @@ object Day11 {
   case class Pow2() extends Op
 
   case class Monkey(
-      n: Int,
-      var items: Seq[Long],
+      var items: Queue[Long],
       operation: Op,
       divisibleTest: Long,
       ifTrueMonkey: Int,
@@ -31,29 +31,26 @@ object Day11 {
       nbrRounds: Int,
       f: (Long => Long) = (x => x)
   ): Long = {
-    val monkeys = split(input).map(parse2)
-
-    var totalInspected: Map[Int, Long] = Map[Int, Long]().withDefaultValue(0L)
+    val monkeys = split(input).map(parse)
+    var totalInspected = Map[Int, Long]().withDefaultValue(0L)
     val period = monkeys.map(_.divisibleTest).product
 
     0.until(nbrRounds).foreach { _ =>
       0.until(monkeys.size).map { i =>
         val monkey = monkeys(i)
-        var nbrInspected = 0
+        var nbrItemsToInspect = monkey.items.size
         while (monkey.items.nonEmpty) {
-          val item = monkey.items.head
-          monkey.items = monkey.items.drop(1)
+          val item = monkey.items.dequeue()
           val newValue = f(eval(monkey.operation, item)) % period
           val targetMonkey = if (newValue % monkey.divisibleTest == 0) {
             monkeys(monkey.ifTrueMonkey)
           } else {
             monkeys(monkey.ifFalseMonkey)
           }
-          targetMonkey.items = targetMonkey.items :+ newValue
-          nbrInspected += 1
+          targetMonkey.items.enqueue(newValue)
         }
         totalInspected =
-          totalInspected.updated(i, totalInspected(i) + nbrInspected.toLong)
+          totalInspected.updated(i, totalInspected(i) + nbrItemsToInspect)
       }
     }
 
@@ -74,11 +71,8 @@ object Day11 {
     }
   }
 
-  private def parse2(lines: Seq[String]): Monkey = {
-    val n = lines.head match {
-      case s"Monkey $i:" => i.toInt
-    }
-    val startingItems = numbers(lines(1))
+  private def parse(lines: Seq[String]): Monkey = {
+    val startingItems = Queue().addAll(numbers(lines(1)))
     val operation = lines(2) match {
       case s"  Operation: new = old * old" => Pow2()
       case s"  Operation: new = old * $x"  => Mul(x.toLong)
@@ -90,6 +84,6 @@ object Day11 {
     val ifTrue = numbers(lines(4)).head.toInt
     val ifFalse = numbers(lines(5)).head.toInt
 
-    Monkey(n, startingItems, operation, test, ifTrue, ifFalse)
+    Monkey(startingItems, operation, test, ifTrue, ifFalse)
   }
 }
