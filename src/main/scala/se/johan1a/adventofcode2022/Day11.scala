@@ -11,7 +11,7 @@ object Day11 {
   case class Pow2() extends Op
 
   case class Monkey(
-      var items: Queue[Long],
+      items: Queue[Long],
       operation: Op,
       divisibleTest: Long,
       ifTrueMonkey: Int,
