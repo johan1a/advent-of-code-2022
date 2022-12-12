@@ -24,9 +24,6 @@ object Day12 {
         }
       }
     }
-    grid.foreach(println)
-    println(start)
-    println(end)
     var currHeight = 'a'
     var endHeight = 'z'
 
@@ -36,7 +33,6 @@ object Day12 {
         queue += ((Int.MaxValue, Vec2(col, row)))
       }
     }
-
 
     val dists = Map[Vec2, Int](start -> 0)
     var prev = Map[Vec2, Vec2]()
@@ -64,10 +60,7 @@ object Day12 {
   private def heightDiffOk(grid: ArrayBuffer[ArrayBuffer[Char]], a: Vec2, b: Vec2) = {
     val aHeight = grid(a.y.toInt)(a.x.toInt).toInt
     val bHeight = grid(b.y.toInt)(b.x.toInt).toInt
-    val res = bHeight <= aHeight || aHeight == bHeight - 1
-
-    //println(s"height ok for $a->$b: $res")
-    res
+    bHeight <= aHeight || aHeight == bHeight - 1
   }
 
   def part2(input: Seq[String]): Int = {
@@ -86,9 +79,6 @@ object Day12 {
         }
       }
     }
-    grid.foreach(println)
-    println(start)
-    println(end)
     var currHeight = 'a'
     var endHeight = 'z'
 
@@ -128,9 +118,6 @@ object Day12 {
   private def heightDiffOk2(grid: ArrayBuffer[ArrayBuffer[Char]], a: Vec2, b: Vec2) = {
     val aHeight = grid(a.y.toInt)(a.x.toInt).toInt
     val bHeight = grid(b.y.toInt)(b.x.toInt).toInt
-    val res = aHeight <= bHeight || bHeight == aHeight - 1
-
-    //println(s"height ok for $a->$b: $res")
-    res
+    aHeight <= bHeight || bHeight == aHeight - 1
   }
 }
