@@ -5,7 +5,6 @@ import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.Map
 import scala.collection.mutable.PriorityQueue
 
-
 object Day12 {
 
   def part1(input: Seq[String]): Int = {
@@ -15,7 +14,7 @@ object Day12 {
     grid.indices.foreach { row =>
       grid(row).indices.foreach { col =>
         val char = grid(row)(col)
-        if(char == 'S') {
+        if (char == 'S') {
           start = Vec2(col, row)
           grid(row)(col) = 'a'
         } else if (char == 'E') {
@@ -41,10 +40,12 @@ object Day12 {
     while (queue.nonEmpty) {
       val u = queue.dequeue()._2
 
-      val uNeighbors = neighbors(u,
+      val uNeighbors = neighbors(
+        u,
         min = Vec2(0, 0),
         max = getMax(grid),
-        includeDiagonals=false).filter(n => heightDiffOk(grid, u, n))
+        includeDiagonals = false
+      ).filter(n => heightDiffOk(grid, u, n))
       uNeighbors.map(neighbor => {
         val dist = dists.get(u).map(_ + 1).getOrElse(Int.MaxValue)
         if (dist < dists.get(neighbor).getOrElse(Int.MaxValue)) {
@@ -57,7 +58,11 @@ object Day12 {
     dists(end)
   }
 
-  private def heightDiffOk(grid: ArrayBuffer[ArrayBuffer[Char]], a: Vec2, b: Vec2) = {
+  private def heightDiffOk(
+      grid: ArrayBuffer[ArrayBuffer[Char]],
+      a: Vec2,
+      b: Vec2
+  ) = {
     val aHeight = grid(a.y.toInt)(a.x.toInt).toInt
     val bHeight = grid(b.y.toInt)(b.x.toInt).toInt
     bHeight <= aHeight || aHeight == bHeight - 1
@@ -70,7 +75,7 @@ object Day12 {
     grid.indices.foreach { row =>
       grid(row).indices.foreach { col =>
         val char = grid(row)(col)
-        if(char == 'S') {
+        if (char == 'S') {
           end = Vec2(col, row)
           grid(row)(col) = 'a'
         } else if (char == 'E') {
@@ -89,7 +94,6 @@ object Day12 {
       }
     }
 
-
     val dists = Map[Vec2, Int](start -> 0)
     var prev = Map[Vec2, Vec2]()
 
@@ -97,10 +101,12 @@ object Day12 {
     while (queue.nonEmpty) {
       val u = queue.dequeue()._2
 
-      val uNeighbors = neighbors(u,
+      val uNeighbors = neighbors(
+        u,
         min = Vec2(0, 0),
         max = getMax(grid),
-        includeDiagonals=false).filter(n => heightDiffOk2(grid, u, n))
+        includeDiagonals = false
+      ).filter(n => heightDiffOk2(grid, u, n))
       uNeighbors.map(neighbor => {
         val dist = dists.get(u).map(_ + 1).getOrElse(Int.MaxValue)
         if (dist < dists.get(neighbor).getOrElse(Int.MaxValue)) {
@@ -110,12 +116,19 @@ object Day12 {
       })
     }
 
-    dists.filter { case(pos, dist) =>
-      grid(pos.y.toInt)(pos.x.toInt) == 'a'
-    }.map(_._2).min
+    dists
+      .filter { case (pos, dist) =>
+        grid(pos.y.toInt)(pos.x.toInt) == 'a'
+      }
+      .map(_._2)
+      .min
   }
 
-  private def heightDiffOk2(grid: ArrayBuffer[ArrayBuffer[Char]], a: Vec2, b: Vec2) = {
+  private def heightDiffOk2(
+      grid: ArrayBuffer[ArrayBuffer[Char]],
+      a: Vec2,
+      b: Vec2
+  ) = {
     val aHeight = grid(a.y.toInt)(a.x.toInt).toInt
     val bHeight = grid(b.y.toInt)(b.x.toInt).toInt
     aHeight <= bHeight || bHeight == aHeight - 1

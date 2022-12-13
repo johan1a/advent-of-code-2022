@@ -19,32 +19,40 @@ object Day13 {
 
   def part1(input: Seq[String]): Int = {
     val pairs = split(input)
-    val indices = pairs.zipWithIndex.map { case (pair: Seq[String], index: Int) =>
-      val result = check(parsePacket(pair.head), parsePacket(pair.last))
-      if (result == OK() || result == Continue()) {
-        index + 1
-      } else {
-        0
+    pairs.zipWithIndex
+      .map { case (pair: Seq[String], index: Int) =>
+        val result = check(parsePacket(pair.head), parsePacket(pair.last))
+        if (result != Fail()) {
+          index + 1
+        } else {
+          0
+        }
       }
-    }.filter(_ != 0)
-    indices.sum
+      .filter(_ != 0)
+      .sum
+  }
+
+  def part2(input: Seq[String]): Int = {
+    val dividerA = "[[2]]"
+    val dividerB = "[[6]]"
+    val pairs = (input.filter(_.nonEmpty) ++ Seq(dividerA, dividerB))
+      .map(parsePacket)
+      .sortWith((a, b) => check(a, b) != Fail())
+    (pairs.indexOf(parsePacket(dividerA)) + 1) * (pairs.indexOf(
+      parsePacket(dividerB)
+    ) + 1)
   }
 
   private def check(a: Packet, b: Packet): Result = {
-    println(s"\na: $a")
-    println(s"b: $b")
-
     (a, b) match {
       case (PacketList(aa), PacketList(bb)) =>
         var j = 0
         var result: Result = Continue()
-        println(s"j=$j")
         while (j < aa.size && j < bb.size && result == Continue()) {
-            result = check(aa(j), bb(j))
-            println(s"result: $result, j=$j")
-            j += 1
+          result = check(aa(j), bb(j))
+          j += 1
         }
-        val r = if (result == Continue()) {
+        if (result == Continue()) {
           if (aa.size < bb.size) {
             OK()
           } else if (aa.size > bb.size) {
@@ -55,19 +63,16 @@ object Day13 {
         } else {
           result
         }
-
-        println(s"result: $r")
-        r
-
-      case (Num(aNum), PacketList(bb))      => check(PacketList(Buffer(a)), b)
-      case (PacketList(aa), Num(bNum))      => check(a, PacketList(Buffer(b)))
-      case (Num(aNum), Num(bNum))           => if(aNum < bNum) {
-        OK()
-      } else if(aNum == bNum) {
-        Continue()
-      } else {
-        Fail()
-      }
+      case (Num(aNum), PacketList(bb)) => check(PacketList(Buffer(a)), b)
+      case (PacketList(aa), Num(bNum)) => check(a, PacketList(Buffer(b)))
+      case (Num(aNum), Num(bNum)) =>
+        if (aNum < bNum) {
+          OK()
+        } else if (aNum == bNum) {
+          Continue()
+        } else {
+          Fail()
+        }
     }
   }
 
@@ -84,7 +89,7 @@ object Day13 {
           stack.push(current)
           current = PacketList(Buffer())
           i += 1
-        case ']' => // todo fails on last ]
+        case ']' =>
           val parent = stack.pop()
           parent.packets += current
           current = parent
@@ -102,15 +107,5 @@ object Day13 {
       }
     }
     current
-  }
-
-  def part2(input: Seq[String]): Int = {
-    val dividerA = "[[2]]"
-    val dividerB = "[[6]]"
-    val pairs = (input.filter(_.nonEmpty) ++ Seq(dividerA, dividerB)).map(parsePacket).sortWith (
-      (a, b) => check(a, b) != Fail()
-      )
-    pairs.foreach(println)
-    (pairs.indexOf(parsePacket(dividerA)) + 1) * (pairs.indexOf(parsePacket(dividerB)) + 1)
   }
 }
