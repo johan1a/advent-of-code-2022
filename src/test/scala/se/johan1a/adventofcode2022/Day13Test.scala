@@ -12,14 +12,16 @@ class Day13Test extends munit.FunSuite {
     assertEquals(Day13.part1(getInput("day13/test0.txt")), 13)
   }
 
-  // 5532 too high
-  // 3898 too low
   test("Part 1") {
     assertEquals(Day13.part1(getInput("day13/input.txt")), 5196)
   }
 
   test("Part 2") {
-    assertEquals(Day13.part2(getInput("day13/input.txt")), -1)
+    assertEquals(Day13.part2(getInput("day13/test2.txt")), 140)
+  }
+
+  test("Part 2") {
+    assertEquals(Day13.part2(getInput("day13/input.txt")), 22134)
   }
 
 }

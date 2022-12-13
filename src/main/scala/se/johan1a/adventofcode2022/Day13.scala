@@ -19,24 +19,16 @@ object Day13 {
 
   def part1(input: Seq[String]): Int = {
     val pairs = split(input)
-    println(pairs)
     val indices = pairs.zipWithIndex.map { case (pair: Seq[String], index: Int) =>
       val result = check(parsePacket(pair.head), parsePacket(pair.last))
-      println(s"\na: ${pair.head}, b: ${pair.last}, result: ${result}")
       if (result == OK() || result == Continue()) {
-        println(s"valid: true")
         index + 1
       } else {
-        println(s"valid: false")
         0
       }
     }.filter(_ != 0)
-    println(s"Valid indices: ${indices}")
-
     indices.sum
   }
-
-
 
   private def check(a: Packet, b: Packet): Result = {
     println(s"\na: $a")
@@ -113,6 +105,12 @@ object Day13 {
   }
 
   def part2(input: Seq[String]): Int = {
-    -1
+    val dividerA = "[[2]]"
+    val dividerB = "[[6]]"
+    val pairs = (input.filter(_.nonEmpty) ++ Seq(dividerA, dividerB)).map(parsePacket).sortWith (
+      (a, b) => check(a, b) != Fail()
+      )
+    pairs.foreach(println)
+    (pairs.indexOf(parsePacket(dividerA)) + 1) * (pairs.indexOf(parsePacket(dividerB)) + 1)
   }
 }
