@@ -28,7 +28,6 @@ object Day13 {
           0
         }
       }
-      .filter(_ != 0)
       .sum
   }
 
