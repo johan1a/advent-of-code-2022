@@ -4,26 +4,39 @@ import Utils._
 
 object Day14 {
 
+  val sandSource = Vec2(500, 0)
+
   def part1(input: Seq[String]): Int = {
-    val sandSource = Vec2(500, 0)
     var rocks: Set[Vec2] = input.flatMap(parseLine).toSet
     val bottom = rocks.toSeq.sortBy(_.y).reverse.head.y
+    solve(rocks, bottom, p => p.y == bottom)
+  }
 
+  def part2(input: Seq[String]): Int = {
+    var rocks: Set[Vec2] = input.flatMap(parseLine).toSet
+    val bottom = rocks.toSeq.sortBy(_.y).reverse.head.y + 1
+    solve(rocks, bottom, p => p == sandSource) + 1
+  }
+
+  def solve(startingRocks: Set[Vec2], bottomY: Long, endFunc: Vec2 => Boolean): Int = {
+    var rocks = startingRocks
     var sum = 0
     var shouldContinue = true
     var sandPos = sandSource
+    var prevPos = sandPos
     while (shouldContinue) {
+      prevPos = sandPos
       var nextSandPos = move(rocks, sandPos)
-      while (nextSandPos != sandPos && nextSandPos.y < bottom) {
+      while (nextSandPos != sandPos && nextSandPos.y < bottomY) {
         sandPos = nextSandPos
         nextSandPos = move(rocks, nextSandPos)
       }
-      if (nextSandPos.y == bottom) {
+      if (endFunc(nextSandPos)) {
         shouldContinue = false
       } else {
         sum += 1
         rocks = rocks + nextSandPos
-        sandPos = sandSource
+        sandPos = prevPos
       }
     }
 
@@ -72,30 +85,4 @@ object Day14 {
     linePoints
   }
 
-  def part2(input: Seq[String]): Int = {
-    val sandSource = Vec2(500, 0)
-    var rocks: Set[Vec2] = input.flatMap(parseLine).toSet
-    val bottom = rocks.toSeq.sortBy(_.y).reverse.head.y + 2
-
-    var sum = 0
-    var shouldContinue = true
-    var sandPos = sandSource
-    while (shouldContinue) {
-      var nextSandPos = move(rocks, sandPos)
-      while (nextSandPos != sandPos && nextSandPos.y < bottom - 1) {
-        sandPos = nextSandPos
-        nextSandPos = move(rocks, nextSandPos)
-      }
-      if (nextSandPos == sandSource) {
-        sum += 1
-        shouldContinue = false
-      } else {
-        sum += 1
-        rocks = rocks + nextSandPos
-        sandPos = sandSource
-      }
-    }
-
-    sum
-  }
 }
