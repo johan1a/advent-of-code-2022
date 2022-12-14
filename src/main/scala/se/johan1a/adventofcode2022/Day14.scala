@@ -8,8 +8,6 @@ object Day14 {
     val sandSource = Vec2(500, 0)
     var rocks: Set[Vec2] = input.flatMap(parseLine).toSet
     val bottom = rocks.toSeq.sortBy(_.y).reverse.head.y
-    rocks.foreach(println)
-    println(s"bottom: $bottom")
 
     var sum = 0
     var shouldContinue = true
@@ -75,6 +73,29 @@ object Day14 {
   }
 
   def part2(input: Seq[String]): Int = {
-    -1
+    val sandSource = Vec2(500, 0)
+    var rocks: Set[Vec2] = input.flatMap(parseLine).toSet
+    val bottom = rocks.toSeq.sortBy(_.y).reverse.head.y + 2
+
+    var sum = 0
+    var shouldContinue = true
+    var sandPos = sandSource
+    while (shouldContinue) {
+      var nextSandPos = move(rocks, sandPos)
+      while (nextSandPos != sandPos && nextSandPos.y < bottom - 1) {
+        sandPos = nextSandPos
+        nextSandPos = move(rocks, nextSandPos)
+      }
+      if (nextSandPos == sandSource) {
+        sum += 1
+        shouldContinue = false
+      } else {
+        sum += 1
+        rocks = rocks + nextSandPos
+        sandPos = sandSource
+      }
+    }
+
+    sum
   }
 }
