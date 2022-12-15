@@ -16,23 +16,6 @@ object Day15 {
 
     var sum = 0
 
-    // find corners and iterate line by line
-
-    // find s with miny,minx,maxy,maxy (4 poins)
-    // for each s
-    //    find dist to nearest b
-    //    if s has miny
-    //      global_min_y <- add y - manhattan(b)
-    //      ...
-    //
-    // traverse each point , line by line from miny to maxy, minx to maxx
-    //    for earch s
-    //      if dist between point to s <= dist between point to its nearest b
-    //        sum +=1
-    //        break
-    //
-    // return sum
-
     val minX = sensorsAndBeacons
       .map((pair: (Vec2, Vec2)) => {
         val dist = sensorManhattan(pair._1)
@@ -72,69 +55,68 @@ object Day15 {
   }
 
   def part2(input: Seq[String], maxX: Int, maxY: Int): Long = {
-    val sensorsAndBeacons: Seq[((Int, Int), (Int, Int))] = input.map(parse).sortBy(_._1.y).map{ case ((s,e)) =>
-      ((s.x.toInt,s.y.toInt), (e.x.toInt,e.y.toInt))
-    }
-    val allBeacons = sensorsAndBeacons.map(e => (e._2._1, e._2._2)).toSet
-    val sensorManhattan: Map[(Int, Int), Int] = sensorsAndBeacons.map {
+    val sensorsAndBeacons: Seq[(Vec2, Vec2)] = input.map(parse).sortBy(_._1.y)
+    val allBeacons = sensorsAndBeacons.map(_._2).toSet
+    val allSensors = sensorsAndBeacons.map(_._1).toSet
+    val sensorManhattan: Map[Vec2, Long] = sensorsAndBeacons.map {
       case (sensor, beacon) =>
-        (sensor._1.toInt, sensor._2.toInt) -> (manhattan(sensor, beacon).toInt)
+        sensor -> (manhattan(sensor, beacon))
     }.toMap
 
     var sum = 0
 
-    // val minX = sensorsAndBeacons.map((pair: (Vec2, Vec2)) => {
-    //   val dist = sensorManhattan(pair._1)
-    //   pair._1.x - dist
-    // }).sorted.head
-
-    // val maxX = sensorsAndBeacons.map((pair: (Vec2, Vec2)) => {
-    //   val dist = sensorManhattan(pair._1)
-    //   pair._1.x + dist
-    // }).sorted.last
-
-    // val minY = sensorsAndBeacons.map((pair: (Vec2, Vec2)) => {
-    //   val dist = sensorManhattan(pair._1)
-    //   pair._1.y - dist
-    // }).sorted.head
-
-    // val maxY = sensorsAndBeacons.map((pair: (Vec2, Vec2)) => {
-    //   val dist = sensorManhattan(pair._1)
-    //   pair._1.y + dist
-    // }).sorted.last
     val minX = 0
-    val minY = 40
+    val minY = 0
 
-    println(s"minx: $minX, maxX: $maxX, minY: $minY, maxY: $maxY")
+    println(s"minx: $minX, maxX: $maxX")
 
-    minY
-      .to(maxY)
-      .map(y => {
-        minX
-          .to(maxX)
-          .map(x => {
-            val pos = (x, y)
-            if (y % 10 == 0 && x % 1000000 == 0) {
-              println(s"x: $x, y: $y. ${y / maxY.toDouble * 100}%")
-            }
-            if (
-              sensorsAndBeacons.exists {
-                case (sensor, beacon) => {
-                  !allBeacons.contains(pos) && manhattan(
-                    pos,
-                    sensor
-                  ) <= sensorManhattan(sensor)
-                }
-              }
-            ) {
-              // continue
-            } else {
-              println(s"pos: $pos")
-              return pos._1 * 4000000 + pos._2
-            }
-          })
+    val possibleYs = minY.to(maxY).filter(y => {
+      sensorsAndBeacons.exists { case (sensor, beacon) =>
+        (y - sensor.y).abs > (beacon.y - sensor.y).abs
+      }
+    })//.sorted
+    val possibleXs = minX.to(maxX).filter(x => {
+
+      val r = sensorsAndBeacons.map { case (sensor, beacon) =>
+        val res = (x - sensor.x).abs > (beacon.x - sensor.x).abs
+        (sensor, res)
+      }
+
+      r.exists(_._2)
+    })//.sorted
+
+    println(possibleXs.size * possibleYs.size)
+    println(maxX * maxY)
+
+    possibleYs.map(y => {
+      possibleXs.map(x => {
+
+      val pos = Vec2(x,y)
+      if(sensorsAndBeacons.forall {
+        case (sensor, beacon) => {
+          !allBeacons.contains(pos) && manhattan(
+            pos,
+            sensor
+          ) > sensorManhattan(sensor)
+        }
+      }) {
+        return pos._1 * 4000000 + pos._2
+      }
       })
+    })
 
+    // val distressPos = possibleXs.zip(possibleYs).find { case ((x,y)) => {
+    //   val pos = Vec2(x,y)
+    //   sensorsAndBeacons.forall {
+    //     case (sensor, beacon) => {
+    //       !allBeacons.contains(pos) && manhattan(
+    //         pos,
+    //         sensor
+    //       ) > sensorManhattan(sensor)
+    //     }
+    //   }
+    // }}.get
+    // distressPos._1 * 4000000 + distressPos._2
     -1
   }
 
