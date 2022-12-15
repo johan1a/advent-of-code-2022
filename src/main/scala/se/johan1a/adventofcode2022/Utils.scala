@@ -28,6 +28,11 @@ object Utils {
     }
   }
 
+  def manhattan(a: (Int, Int), b: (Int, Int)): Int = {
+    val diff = (a._1 - b._1, a._2 - b._2)
+    diff._1.abs + diff._2.abs
+  }
+
   def manhattan(a: Vec2, b: Vec2): Long = {
     val diff = sub(a, b)
     diff.x.abs + diff.y.abs
