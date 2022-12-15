@@ -63,61 +63,123 @@ object Day15 {
         sensor -> (manhattan(sensor, beacon))
     }.toMap
 
-    var sum = 0
 
-    val minX = 0
-    val minY = 0
+    val min = Vec2(0, 0)
+    val max = Vec2(maxX, maxY)
 
-    println(s"minx: $minX, maxX: $maxX")
+    println("calculate edges")
+    val possible = sensorsAndBeacons
+      .map(sb => {
+        println(s"calculating edges for sensor: ${sb._1}")
+        //val ee = edges(sb._1, sb._2).filter(p => inRange(p, min, max))
+        val sensor = sb._1
+        val beacon = sb._2
 
-    val possibleYs = minY.to(maxY).filter(y => {
-      sensorsAndBeacons.exists { case (sensor, beacon) =>
-        (y - sensor.y).abs > (beacon.y - sensor.y).abs
-      }
-    })//.sorted
-    val possibleXs = minX.to(maxX).filter(x => {
+        val dist = manhattan(sensor, beacon) + 1
 
-      val r = sensorsAndBeacons.map { case (sensor, beacon) =>
-        val res = (x - sensor.x).abs > (beacon.x - sensor.x).abs
-        (sensor, res)
-      }
+        var positions = Seq[Vec2]()
 
-      r.exists(_._2)
-    })//.sorted
+        val above = add(sensor, Vec2(0, -dist))
+        val below = add(sensor, Vec2(0, dist))
+        val right = add(sensor, Vec2(dist, 0))
+        val left = add(sensor, Vec2(-dist, 0))
 
-    println(possibleXs.size * possibleYs.size)
-    println(maxX * maxY)
+        var i = 0
+        val period = 10000
 
-    possibleYs.map(y => {
-      possibleXs.map(x => {
+        println("At above")
+        var pos = above
+        while (pos != right) {
+          positions = positions :+ pos
+          pos = add(pos, Vec2(1, 1))
 
-      val pos = Vec2(x,y)
-      if(sensorsAndBeacons.forall {
-        case (sensor, beacon) => {
-          !allBeacons.contains(pos) && manhattan(
-            pos,
-            sensor
-          ) > sensorManhattan(sensor)
+          if(i % period == 0 ){
+            println(s"sensor: $sensor, pos: $pos, i: $i")
+          }
+          i += 1
+
+          if (inRange(pos, min, max) && sensorsAndBeacons.forall { case ((sensor, beacon)) =>
+            manhattan(pos, sensor) > sensorManhattan(sensor)
+          }) {
+            return pos.x * 4000000 + pos.y
+          }
         }
-      }) {
-        return pos._1 * 4000000 + pos._2
-      }
+        println("At right")
+        while (pos != below) {
+          positions = positions :+ pos
+          pos = add(pos, Vec2(-1, 1))
+          if(i % period == 0 ){
+            println(s"sensor: $sensor, pos: $pos, i: $i")
+          }
+          i += 1
+          if (inRange(pos, min, max) && sensorsAndBeacons.forall { case ((sensor, beacon)) =>
+            manhattan(pos, sensor) > sensorManhattan(sensor)
+          }) {
+            return pos.x * 4000000 + pos.y
+          }
+        }
+        println("At below")
+        while (pos != left) {
+          positions = positions :+ pos
+          pos = add(pos, Vec2(-1, -1))
+          if(i % period == 0 ){
+            println(s"sensor: $sensor, pos: $pos, i: $i")
+          }
+          i += 1
+          if (inRange(pos, min, max) && sensorsAndBeacons.forall { case ((sensor, beacon)) =>
+            manhattan(pos, sensor) > sensorManhattan(sensor)
+          }) {
+            return pos.x * 4000000 + pos.y
+          }
+        }
+        println("At left")
+        while (pos != above) {
+          positions = positions :+ pos
+          pos = add(pos, Vec2(1, -1))
+          if(i % period == 0 ){
+            println(s"sensor: $sensor, pos: $pos, i: $i")
+          }
+          i += 1
+          if (inRange(pos, min, max) && sensorsAndBeacons.forall { case ((sensor, beacon)) =>
+            manhattan(pos, sensor) > sensorManhattan(sensor)
+          }) {
+            return pos.x * 4000000 + pos.y
+          }
+        }
+        -1
       })
-    })
-
-    // val distressPos = possibleXs.zip(possibleYs).find { case ((x,y)) => {
-    //   val pos = Vec2(x,y)
-    //   sensorsAndBeacons.forall {
-    //     case (sensor, beacon) => {
-    //       !allBeacons.contains(pos) && manhattan(
-    //         pos,
-    //         sensor
-    //       ) > sensorManhattan(sensor)
-    //     }
-    //   }
-    // }}.get
-    // distressPos._1 * 4000000 + distressPos._2
     -1
+  }
+
+  private def edges(sensor: Vec2, beacon: Vec2): Seq[Vec2] = {
+    val dist = manhattan(sensor, beacon) + 1
+
+    var positions = Seq[Vec2]()
+
+    val above = add(sensor, Vec2(0, -dist))
+    val below = add(sensor, Vec2(0, dist))
+    val right = add(sensor, Vec2(dist, 0))
+    val left = add(sensor, Vec2(-dist, 0))
+
+    var pos = above
+    while (pos != right) {
+      positions = positions :+ pos
+      pos = add(pos, Vec2(1, 1))
+    }
+    while (pos != below) {
+      positions = positions :+ pos
+      pos = add(pos, Vec2(-1, 1))
+    }
+    while (pos != left) {
+      positions = positions :+ pos
+      pos = add(pos, Vec2(-1, -1))
+    }
+    while (pos != above) {
+      positions = positions :+ pos
+      pos = add(pos, Vec2(1, -1))
+    }
+
+    positions
   }
 
   private def parse(line: String): (Vec2, Vec2) = {
