@@ -7,4 +7,4 @@ steps:
 - name: unit tests
   image: mozilla/sbt:11.0.8_1.3.13
   commands:
-  - sbt test
+  - sbt -mem 3096 test

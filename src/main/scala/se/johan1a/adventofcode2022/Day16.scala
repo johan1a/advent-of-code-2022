@@ -11,8 +11,6 @@ object Day16 {
       open: Boolean
   )
 
-  var i = 0
-
   case class State(
       valves: Map[String, Boolean],
       current: String,
@@ -21,8 +19,8 @@ object Day16 {
   )
 
   var cache = Map[State, (Short, Seq[String])]()
-
   var valves = Map[String, Valve]()
+  var i = 0
 
   def part1(input: Seq[String]): Int = {
     cache = Map()
@@ -116,25 +114,13 @@ object Day16 {
               )
             }
           if (valve.rate > 0 && !valveStates(current)) {
-            val rr = (openResult +: moveResults)
-            // if(current == "AA") {
-            //   println(s"at current: $current. possible:")
-            //   rr.foreach(println)
-            // }
-            val (v, p) = rr.maxBy(_._1)
+            val (v, p) = (openResult +: moveResults).maxBy(_._1)
+            (v, (current +: p))
+          } else if (moveResults.nonEmpty) {
+            val (v, p) = moveResults.maxBy(_._1)
             (v, (current +: p))
           } else {
-            if (moveResults.nonEmpty) {
-              val rr = moveResults
-              // if (current == "AA" && total > 900) {
-              //   println(s"at current: $current. possible:")
-              //   rr.foreach(println)
-              // }
-              val (v, p) = rr.maxBy(_._1)
-              (v, (current +: p))
-            } else {
-              (total, Seq(current))
-            }
+            (total, Seq(current))
           }
         }
 
