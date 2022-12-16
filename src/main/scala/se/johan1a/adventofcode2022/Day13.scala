@@ -19,16 +19,14 @@ object Day13 {
 
   def part1(input: Seq[String]): Int = {
     val pairs = split(input)
-    pairs.zipWithIndex
-      .map { case (pair: Seq[String], index: Int) =>
-        val result = check(parsePacket(pair.head), parsePacket(pair.last))
-        if (result != Fail()) {
-          index + 1
-        } else {
-          0
-        }
+    pairs.zipWithIndex.map { case (pair: Seq[String], index: Int) =>
+      val result = check(parsePacket(pair.head), parsePacket(pair.last))
+      if (result != Fail()) {
+        index + 1
+      } else {
+        0
       }
-      .sum
+    }.sum
   }
 
   def part2(input: Seq[String]): Int = {

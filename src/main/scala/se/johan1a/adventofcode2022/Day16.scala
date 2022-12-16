@@ -22,7 +22,7 @@ object Day16 {
 
   var cache = Map[State, (Short, Seq[String])]()
 
-  var valves = Map[String,Valve]()
+  var valves = Map[String, Valve]()
 
   def part1(input: Seq[String]): Int = {
     cache = Map()
@@ -34,8 +34,10 @@ object Day16 {
     println(s"reduced valves:")
     valves.foreach(println)
     val maxPossibleFlow = valves.map(_._2.rate).sum.toShort
-    val initialStates: Map[String, Boolean] = valves.map(e => e._1 -> false).toMap
-    val (value, path) = findBest(initialStates, maxPossibleFlow, start, 0, 0, 30)
+    val initialStates: Map[String, Boolean] =
+      valves.map(e => e._1 -> false).toMap
+    val (value, path) =
+      findBest(initialStates, maxPossibleFlow, start, 0, 0, 30)
     println(path)
     value
   }

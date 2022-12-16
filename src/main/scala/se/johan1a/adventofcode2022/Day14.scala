@@ -18,7 +18,11 @@ object Day14 {
     solve(rocks, bottom, p => p == sandSource) + 1
   }
 
-  def solve(startingRocks: Set[Vec2], bottomY: Long, endFunc: Vec2 => Boolean): Int = {
+  def solve(
+      startingRocks: Set[Vec2],
+      bottomY: Long,
+      endFunc: Vec2 => Boolean
+  ): Int = {
     var rocks = startingRocks
     var sum = 0
     var shouldContinue = true

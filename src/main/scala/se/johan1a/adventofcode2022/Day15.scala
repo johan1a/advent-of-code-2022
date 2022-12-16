@@ -56,7 +56,6 @@ object Day15 {
   def part2(input: Seq[String], maxX: Int, maxY: Int): Long = {
     val sensorsAndBeacons: Seq[(Vec2, Vec2)] = input.map(parse).sortBy(_._1.y)
     val (upLines, downLines) = getLines(sensorsAndBeacons)
-    println(sensorsAndBeacons)
 
     val allBeacons = sensorsAndBeacons.map(_._2).toSet
     val allSensors = sensorsAndBeacons.map(_._1).toSet
@@ -73,9 +72,8 @@ object Day15 {
     upLines.foreach { up =>
       downLines.foreach { down =>
         val intersection = getIntersection(up, down)
-        println(s"up: $up, down: $down, intersection: $intersection")
         if (
-          inRange(intersection,min,max) &&
+          inRange(intersection, min, max) &&
           matches(intersection, sensorsAndBeacons, allBeacons, sensorManhattan)
         ) {
           return intersection.x * 4000000 + intersection.y
@@ -86,7 +84,7 @@ object Day15 {
   }
 
   private def getIntersection(up: Long, down: Long): Vec2 = {
-    val x = (up - down ) / 2
+    val x = (up - down) / 2
     val y = (down + up) / 2
     Vec2(x, y)
   }
