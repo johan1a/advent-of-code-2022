@@ -54,17 +54,12 @@ object Day16 {
         }
       }
 
-    val uniquePaths = bestPathScore.keys.toSeq
-    println(uniquePaths.size)
+    val uniquePaths = bestPathScore.keys.toArray
 
     var best = 0
 
     0.until(uniquePaths.size - 1)
       .map { i =>
-
-        if (i % 100 == 0) {
-          println(s"i: $i / ${uniquePaths.size}")
-        }
 
         val inners = (i + 1)
           .until(uniquePaths.size)
@@ -83,11 +78,6 @@ object Day16 {
           inners.max
         } else {
           0
-        }
-
-        if (res > best) {
-          println(s"best: $best")
-          best = res
         }
 
         res
