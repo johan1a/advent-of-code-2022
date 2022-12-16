@@ -24,10 +24,75 @@ object Day16 {
 
     val leftToVisit = valves2.map(_._1).filterNot(_ == start).toSeq
 
-    val results = findBest2(leftToVisit, start, 30)
-    val rr = results.sortBy(_._1)
+    val results = findPaths(leftToVisit, start, 30)
+    results.sortBy(_._1).last._1
+  }
 
-    rr.last._1
+  def part2(input: Seq[String]): Int = {
+    val (valves0, dist0) = reduceGraph2(
+      input.map(parse).map { v => v.name -> v }.toMap
+    )
+    dist = dist0
+    valves2 = valves0
+
+    val start = "AA"
+
+    val leftToVisit = valves2.map(_._1).filterNot(_ == start).toSeq
+
+    var bestPathScore = Map[Set[String], Short]()
+    val results = findPaths(leftToVisit, start, 26)
+      .sortBy(_._1)
+      .reverse
+      .map { case (value, path) =>
+        (value, path.toSet)
+      }
+      .map { case ((value: Short), (path: Set[String])) =>
+        val bb: Int = bestPathScore.getOrElse(path, 0.toShort)
+        val best = bb.toShort
+        if (best < value) {
+          bestPathScore = bestPathScore + (path -> value)
+        }
+      }
+
+    val uniquePaths = bestPathScore.keys.toSeq
+    println(uniquePaths.size)
+
+    var best = 0
+
+    0.until(uniquePaths.size - 1)
+      .map { i =>
+
+        if (i % 100 == 0) {
+          println(s"i: $i / ${uniquePaths.size}")
+        }
+
+        val inners = (i + 1)
+          .until(uniquePaths.size)
+          .filter { j =>
+            val iPath = uniquePaths(i)
+            val jPath = uniquePaths(j)
+            iPath.forall(valve => !jPath.contains(valve))
+          }
+          .map { j =>
+            val iPath = uniquePaths(i)
+            val jPath = uniquePaths(j)
+            bestPathScore(iPath) + bestPathScore(jPath)
+          }
+
+        val res = if (inners.nonEmpty) {
+          inners.max
+        } else {
+          0
+        }
+
+        if (res > best) {
+          println(s"best: $best")
+          best = res
+        }
+
+        res
+      }
+      .max
   }
 
   private def reduceGraph(valves: Map[String, Valve]): Map[String, Valve] = {
@@ -59,7 +124,7 @@ object Day16 {
   var valves2 = Map[String, Valve]()
   var dist = mutable.Map[(String, String), Short]()
 
-  private def findBest2(
+  private def findPaths(
       leftToVisit: Seq[String],
       current: String,
       minutesLeft: Short
@@ -73,7 +138,7 @@ object Day16 {
       .flatMap { next =>
         val d = dist((current, next))
         val results =
-          findBest2(
+          findPaths(
             leftToVisit.filterNot(_ == next),
             next,
             (minutesLeft - d - 1).toShort
@@ -85,11 +150,7 @@ object Day16 {
         r0
       }
 
-    if (r.nonEmpty) {
-      r
-    } else {
-      Seq((valveTotal.toShort, Seq(current)))
-    }
+    r :+ (valveTotal.toShort, Seq())
   }
 
   private def reduceGraph2(
