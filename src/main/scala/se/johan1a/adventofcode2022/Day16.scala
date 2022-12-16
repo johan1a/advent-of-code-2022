@@ -14,26 +14,28 @@ object Day16 {
   var i = 0
 
   case class State(
-      valves: Seq[Boolean],
+      valves: Map[String, Boolean],
       current: String,
-      total: Int,
-      flow: Int,
-      minutesLeft: Int
+      total: Short,
+      minutesLeft: Short
   )
 
-  var cache = Map[State, (Int, Seq[String])]()
+  var cache = Map[State, (Short, Seq[String])]()
+
+  var valves = Map[String,Valve]()
 
   def part1(input: Seq[String]): Int = {
     cache = Map()
     i = 0
-    val valves: Map[String, Valve] = reduceGraph(
+    valves = reduceGraph(
       input.map(parse).map { v => v.name -> v }.toMap
     )
     val start = "AA"
     println(s"reduced valves:")
     valves.foreach(println)
-    val maxPossibleFlow = valves.map(_._2.rate).sum
-    val (value, path) = findBest(valves, maxPossibleFlow, start, 0, 0, 30)
+    val maxPossibleFlow = valves.map(_._2.rate).sum.toShort
+    val initialStates: Map[String, Boolean] = valves.map(e => e._1 -> false).toMap
+    val (value, path) = findBest(initialStates, maxPossibleFlow, start, 0, 0, 30)
     println(path)
     value
   }
@@ -65,23 +67,23 @@ object Day16 {
   }
 
   private def findBest(
-      valves: Map[String, Valve],
-      maxPossibleFlow: Int,
+      valveStates: Map[String, Boolean],
+      maxPossibleFlow: Short,
       current: String,
-      total: Int,
-      flow: Int,
-      minutesLeft: Int
-  ): (Int, Seq[String]) = {
+      total: Short,
+      flow: Short,
+      minutesLeft: Short
+  ): (Short, Seq[String]) = {
 
-    val state = State(valves.values.map(_.open).toSeq, current, total, flow, minutesLeft)
+    val state = State(valveStates, current, total, minutesLeft)
     val cached = cache.get(state)
     cached match {
       case Some(value) => value
       case None =>
-        val result: (Int, Seq[String]) = if (minutesLeft == 0) {
+        val result: (Short, Seq[String]) = if (minutesLeft == 0) {
           (total, Seq(current))
         } else if (flow == maxPossibleFlow) {
-          (total + flow * minutesLeft, Seq(current))
+          (total, Seq(current))
         } else {
           i += 1
           if (i % 100000 == 0) {
@@ -91,28 +93,27 @@ object Day16 {
             throw new Exception(s"Too many iters, minutes left: $minutesLeft")
           }
           val valve = valves(current)
-          val opened = valve.copy(open = true)
           lazy val openResult = findBest(
-            valves + (current -> opened),
+            valveStates + (current -> true),
             maxPossibleFlow,
             current,
-            total + flow,
-            flow + valve.rate,
-            minutesLeft - 1
+            (total + valve.rate * (minutesLeft - 1)).toShort,
+            (flow + valve.rate).toShort,
+            (minutesLeft - 1).toShort
           )
 
           lazy val moveResults =
             valve.next.filter(_._2 <= minutesLeft).map { case (next, dist) =>
               findBest(
-                valves,
+                valveStates,
                 maxPossibleFlow,
                 next,
-                total + flow * dist,
+                total,
                 flow,
-                minutesLeft - dist
+                (minutesLeft - dist).toShort
               )
             }
-          if (valve.rate > 0 && !valve.open) {
+          if (valve.rate > 0 && !valveStates(current)) {
             val rr = (openResult +: moveResults)
             // if(current == "AA") {
             //   println(s"at current: $current. possible:")
@@ -130,7 +131,7 @@ object Day16 {
               val (v, p) = rr.maxBy(_._1)
               (v, (current +: p))
             } else {
-              (total + flow * minutesLeft, Seq(current))
+              (total, Seq(current))
             }
           }
         }
@@ -149,9 +150,9 @@ object Day16 {
     line match {
       case s"Valve $name has flow rate=$rate; tunnels lead to valves $valves" =>
         val nextValves = valves.split(", ").map(v => (v, 1))
-        Valve(name, rate.toInt, nextValves, false)
+        Valve(name, rate.toShort, nextValves, false)
       case s"Valve $name has flow rate=$rate; tunnel leads to valve $valve" =>
-        Valve(name, rate.toInt, Seq((valve, 1)), false)
+        Valve(name, rate.toShort, Seq((valve, 1)), false)
     }
 
   }
