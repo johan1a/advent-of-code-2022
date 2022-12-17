@@ -13,54 +13,15 @@ object Day17 {
   val minPos = Vec2(minX + 1, Int.MinValue)
   val maxPos = Vec2(maxX, maxY)
 
-  def part1(input: Seq[String], n: Int = 2022): Int = {
-    val jets = input.head.toCharArray()
-    var highestY = 0
-    var i = 0
-    var static = Map[Vec2, Boolean]().withDefaultValue(false)
-    var j = 0
-    while (i < n) {
-      val shape = shapes(i % shapes.size)
-      var pos = Vec2(minX + 3, highestY - 4)
-      var prevPos = pos
-      var atRest = false
-      while (!atRest) {
-        jets(j % jets.size) match {
-          case '>' =>
-            pos = add(pos, Vec2(1, 0))
-          case '<' =>
-            pos = add(pos, Vec2(-1, 0))
-        }
-
-        if (collision(static, pos, shape)) {
-          pos = prevPos
-        }
-        prevPos = pos
-        pos = add(pos, Vec2(0, 1))
-        if (collision(static, pos, shape)) {
-          pos = prevPos
-          atRest = true
-        } else {
-          prevPos = pos
-        }
-
-        j += 1
-      }
-      static = static ++ (shape.points.map { point =>
-        add(point, pos) -> true
-      })
-
-      val shapeHighestY =
-        shape.points.map(p => add(p, pos)).sortBy(_.y).head.y.toInt
-      highestY = Math.min(highestY, shapeHighestY)
-
-      i += 1
-    }
-
-    highestY.abs
+  def part1(input: Seq[String], n: Int = 2022): Long = {
+    solve(input, n)
   }
 
-  def collision(
+  def part2(input: Seq[String], n: Long = 1000000000000L): Long = {
+    solve(input, n)
+  }
+
+  private def collision(
       static: Map[Vec2, Boolean],
       base: Vec2,
       shape: Shape
@@ -73,7 +34,7 @@ object Day17 {
     }
   }
 
-  def part2(input: Seq[String], N: Long = 1000000000000L): Long = {
+  def solve(input: Seq[String], N: Long): Long = {
     var n = N
     val jets = input.head.toCharArray()
     var highestY = 0L
@@ -91,7 +52,6 @@ object Day17 {
       var pos = Vec2(minX + 3, highestY - 4)
       var prevPos = pos
       var atRest = false
-      // println(s"i:$i, highestY: $highestY, pos: $pos")
 
       while (!atRest) {
         jets(j % jets.size) match {
@@ -102,13 +62,11 @@ object Day17 {
         }
 
         if (collision(static, pos, shape)) {
-          // println("wall collision")
           pos = prevPos
         }
         prevPos = pos
         pos = add(pos, Vec2(0, 1))
         if (collision(static, pos, shape)) {
-          // println("static collision")
           pos = prevPos
           atRest = true
         } else {
