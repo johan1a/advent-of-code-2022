@@ -73,7 +73,8 @@ object Day17 {
     }
   }
 
-  def part2(input: Seq[String], n: Long = 1000000000000L): Long = {
+  def part2(input: Seq[String], N: Long = 1000000000000L): Long = {
+    var n = N
     val jets = input.head.toCharArray()
     var highestY = 0L
     var i = 0L
@@ -82,6 +83,8 @@ object Day17 {
 
     var seen = Map[(Int, Int, String), (Long, Long)]()
     var useSeen = true
+
+    var bonus = 0L
 
     while (i < n) {
       val shape = shapes((i % shapes.size).toInt)
@@ -135,39 +138,19 @@ object Day17 {
         }
         .mkString
 
-      if (i % 113 == 0) {
-        println(highestY / 178)
-      }
-
       val state = ((i % shapes.size).toInt, j % jets.size, topState)
       if (useSeen && seen.contains(state)) {
         val (oldI, oldHighestY) = seen(state)
-        // println(s"seen state at i:$i, highestY: ${highestY.abs}")
         val period = i - oldI
         val yPeriod = highestY - oldHighestY
-        println(
-          s"period: $period, yPeriod: $yPeriod, oldhighesty: $oldHighestY, highestY: $highestY"
-        )
         val k = (n - i) / period
-        i = i + k * period
-        highestY = highestY + k * yPeriod
+        n = n - k * period
+        bonus = (k * yPeriod).abs
 
-        0.until(stateDepth)
-          .map { yDiff =>
-            val oldY = oldHighestY + yDiff
-            val newY = highestY + yDiff
-            (minX + 1)
-              .until(maxX)
-              .map { x =>
-                if (static(Vec2(x, oldY))) {
-                  static(Vec2(x, newY)) = true
-                }
-              }
-              .mkString
-          }
-          .mkString
+        // println(
+        //   s"period: $period, yPeriod: $yPeriod, oldhighesty: $oldHighestY, highestY: $highestY, k: $k"
+        // )
 
-        println(s"i: $i, highestY: $highestY")
         useSeen = false
       }
       seen = seen + (state -> (i, highestY))
@@ -175,7 +158,7 @@ object Day17 {
       i += 1
     }
 
-    highestY.abs
+    highestY.abs + bonus
   }
 
   val shapes = Seq(
