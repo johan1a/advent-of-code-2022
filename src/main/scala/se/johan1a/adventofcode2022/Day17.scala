@@ -1,6 +1,7 @@
 package se.johan1a.adventofcode2022
 
 import Utils._
+import scala.collection.mutable.Map
 
 object Day17 {
 
@@ -23,15 +24,11 @@ object Day17 {
       var pos = Vec2(minX + 3, highestY - 4)
       var prevPos = pos
       var atRest = false
-      //println(s"startpos: $pos, highestY: $highestY i:$i")
       while (!atRest) {
-        //println(s"pos: $pos")
         jets(j % jets.size) match {
           case '>' =>
-            //println(s"applying jet j=$j >")
             pos = add(pos, Vec2(1, 0))
           case '<' =>
-            //println(s"applying jet j=$j <")
             pos = add(pos, Vec2(-1, 0))
         }
 
@@ -40,7 +37,6 @@ object Day17 {
         }
         prevPos = pos
         pos = add(pos, Vec2(0, 1))
-        //println("moving down")
         if (collision(static, pos, shape)) {
           pos = prevPos
           atRest = true
@@ -48,22 +44,15 @@ object Day17 {
           prevPos = pos
         }
 
-        // assert(j < 1000)
         j += 1
       }
-      //println(s"end pos: $pos\n")
       static = static ++ (shape.points.map { point =>
         add(point, pos) -> true
       })
 
-      //println(s"shape points: ${shape.points.map(p => add(p, pos))}")
       val shapeHighestY =
         shape.points.map(p => add(p, pos)).sortBy(_.y).head.y.toInt
-      //println(s"shapeHighestY: $shapeHighestY")
-      //println(s"wtf: ${shape.points.map(p => add(p, pos)).sortBy(_.y).head.y}")
       highestY = Math.min(highestY, shapeHighestY)
-
-      // assert(i < 3)
 
       i += 1
     }
@@ -80,18 +69,113 @@ object Day17 {
       val pos = add(point, base)
       val r0 = !inRange(pos, minPos, maxPos)
       val r1 = static(pos)
-      if (r0) {
-        //println(s"wall collision at $pos, point:$point,base:$base")
-      }
-      if (r1) {
-        //println(s"static collision at $pos")
-      }
       r0 || r1
     }
   }
 
-  def part2(input: Seq[String]): Int = {
-    -1
+  def part2(input: Seq[String], n: Long = 1000000000000L): Long = {
+    val jets = input.head.toCharArray()
+    var highestY = 0L
+    var i = 0L
+    var static = Map[Vec2, Boolean]().withDefaultValue(false)
+    var j = 0
+
+    var seen = Map[(Int, Int, String), (Long, Long)]()
+    var useSeen = true
+
+    while (i < n) {
+      val shape = shapes((i % shapes.size).toInt)
+      var pos = Vec2(minX + 3, highestY - 4)
+      var prevPos = pos
+      var atRest = false
+      // println(s"i:$i, highestY: $highestY, pos: $pos")
+
+      while (!atRest) {
+        jets(j % jets.size) match {
+          case '>' =>
+            pos = add(pos, Vec2(1, 0))
+          case '<' =>
+            pos = add(pos, Vec2(-1, 0))
+        }
+
+        if (collision(static, pos, shape)) {
+          // println("wall collision")
+          pos = prevPos
+        }
+        prevPos = pos
+        pos = add(pos, Vec2(0, 1))
+        if (collision(static, pos, shape)) {
+          // println("static collision")
+          pos = prevPos
+          atRest = true
+        } else {
+          prevPos = pos
+        }
+
+        j += 1
+      }
+      static = static ++ (shape.points.map { point =>
+        add(point, pos) -> true
+      })
+
+      val shapeHighestY =
+        shape.points.map(p => add(p, pos)).sortBy(_.y).head.y.toInt
+      highestY = Math.min(highestY, shapeHighestY)
+
+      val stateDepth = 50
+      val topState = shapeHighestY
+        .until(shapeHighestY + stateDepth)
+        .map { y =>
+          (minX + 1)
+            .until(maxX)
+            .map { x =>
+              if (static(Vec2(x, y))) then "#" else "."
+            }
+            .mkString
+        }
+        .mkString
+
+      if (i % 113 == 0) {
+        println(highestY / 178)
+      }
+
+      val state = ((i % shapes.size).toInt, j % jets.size, topState)
+      if (useSeen && seen.contains(state)) {
+        val (oldI, oldHighestY) = seen(state)
+        // println(s"seen state at i:$i, highestY: ${highestY.abs}")
+        val period = i - oldI
+        val yPeriod = highestY - oldHighestY
+        println(
+          s"period: $period, yPeriod: $yPeriod, oldhighesty: $oldHighestY, highestY: $highestY"
+        )
+        val k = (n - i) / period
+        i = i + k * period
+        highestY = highestY + k * yPeriod
+
+        0.until(stateDepth)
+          .map { yDiff =>
+            val oldY = oldHighestY + yDiff
+            val newY = highestY + yDiff
+            (minX + 1)
+              .until(maxX)
+              .map { x =>
+                if (static(Vec2(x, oldY))) {
+                  static(Vec2(x, newY)) = true
+                }
+              }
+              .mkString
+          }
+          .mkString
+
+        println(s"i: $i, highestY: $highestY")
+        useSeen = false
+      }
+      seen = seen + (state -> (i, highestY))
+
+      i += 1
+    }
+
+    highestY.abs
   }
 
   val shapes = Seq(
