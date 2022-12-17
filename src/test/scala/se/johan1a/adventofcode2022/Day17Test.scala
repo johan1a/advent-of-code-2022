@@ -5,7 +5,11 @@ import se.johan1a.adventofcode2022.TestInputUtil.getInput
 class Day17Test extends munit.FunSuite {
 
   test("Part 1") {
-    assertEquals(Day17.part1(getInput("day17/input.txt")), -1)
+    assertEquals(Day17.part1(getInput("day17/test0.txt")), 3068)
+  }
+
+  test("Part 1") {
+    assertEquals(Day17.part1(getInput("day17/input.txt")), 3224)
   }
 
   test("Part 2") {
