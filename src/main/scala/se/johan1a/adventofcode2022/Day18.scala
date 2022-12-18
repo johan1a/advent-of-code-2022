@@ -6,7 +6,6 @@ object Day18 {
 
   def part1(input: Seq[String]): Int = {
     val cubes = parse(input)
-    println(cubes)
     var sum = 0
     val r1 = cubes
       .foreach {
@@ -22,12 +21,10 @@ object Day18 {
               }
             })
             .sum
-          println(s"cube $cube sum $r")
           sum += r
         }
       }
 
-    println(sum)
     sum
   }
 
