@@ -73,6 +73,9 @@ object Utils {
   def inRange(pos: Vec2, min: Vec2, max: Vec2): Boolean =
     pos.x >= min.x && pos.x < max.x && pos.y >= min.y && pos.y < max.y
 
+  def inRange(pos: Vec3, min: Vec3, max: Vec3): Boolean =
+    pos.x >= min.x && pos.x < max.x && pos.y >= min.y && pos.y < max.y && pos.z >= min.z && pos.z < max.z
+
   def neighbors(
       pos: Vec2,
       min: Vec2 = Vec2(Long.MinValue, Long.MinValue),
@@ -94,6 +97,25 @@ object Utils {
           } else {
             Seq.empty
           })
+
+    offsets
+      .map(offset => add(pos, offset))
+      .filter(inRange(_, min, max))
+  }
+
+  def neighbors3(
+      pos: Vec3,
+      min: Vec3 = Vec3(Long.MinValue, Long.MinValue, Long.MinValue),
+      max: Vec3 = Vec3(Long.MaxValue, Long.MaxValue, Long.MaxValue)
+  ): Seq[Vec3] = {
+    val offsets: Seq[Vec3] = Seq(
+      Vec3(0, 0, -1),
+      Vec3(0, 0, 1),
+      Vec3(0, -1, 0),
+      Vec3(0, 1, 0),
+      Vec3(-1, 0, 0),
+      Vec3(1, 0, 0)
+    )
 
     offsets
       .map(offset => add(pos, offset))
