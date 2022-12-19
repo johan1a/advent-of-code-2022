@@ -1,32 +1,23 @@
 package se.johan1a.adventofcode2022
 
 import Utils._
+import scala.collection.mutable.PriorityQueue
 
 object Day19 {
 
   case class Robot(name: String, costs: Map[String, Int])
   case class State(
-      blueprints: Seq[Robot],
       robots: Map[String, Int],
       resources: Map[String, Int],
       minutesLeft: Int
   )
 
-  var i = 0
-  var globalBest = 0
-
-  var cache = Map[State, (Int, State)]()
-
   def part1(input: Seq[String]): Int = {
-    i = 0
     val blueprints = input.map(parse)
     val robots = Map[String, Int]("ore" -> 1)
     blueprints.map { case (id, robotBlueprints) =>
-      cache = Map[State, (Int, State)]()
-      globalBest = 0
-
       println(robots)
-      val (best, state) = findBest(robotBlueprints, robots, Map(), 24, false)
+      val (best, state) = findBest(robotBlueprints, State(robots, Map(), 24))
       println(
         s"id: $id, best: $best, robots: ${state.robots}, resources: ${state.resources}"
       )
@@ -34,101 +25,121 @@ object Day19 {
     }.sum
   }
 
+  private def score(state: State) = {
+    100 * get(state.resources, "geode")
+      + 100 * get(state.robots, "geode") * state.minutesLeft
+
+      + 20 * get(state.resources, "obsidian")
+      + 20 * get(state.robots, "obsidian") * state.minutesLeft
+
+      + 10 * get(state.resources, "clay")
+      + 10 * get(state.robots, "clay") * state.minutesLeft
+
+      + 10 * get(state.resources, "ore")
+      + 10 * get(state.robots, "ore") * state.minutesLeft
+  }
+
+  private def get(m: Map[String, Int], k: String): Int = {
+    m.getOrElse(k, 0)
+  }
+
   private def findBest(
-      blueprints: Seq[Robot],
-      robots: Map[String, Int],
-      resources: Map[String, Int],
-      minutesLeft: Int,
-      waited: Boolean
+    blueprints: Seq[Robot],
+      start: State
   ): (Int, State) = {
-    assert(i < 1000000)
-    if (i % 1000000 == 0) {
-      println(i)
-    }
-    i += 1
+    var i = 0
 
-    var state = State(blueprints, robots, resources, minutesLeft)
+    var queue = PriorityQueue[State]()(Ordering.by { s =>
+      -score(s)
+    })
 
-    if (minutesLeft == 0) {
-      (resources.getOrElse("geode", 0), state)
-    } else if (cache.contains(state)) {
-      cache(state)
-    } else if (
-      resources.getOrElse("geode", 0) + robots.getOrElse(
-        "geode",
-        0
-      ) * minutesLeft + sum(minutesLeft - 1) < globalBest
-    ) {
-      cache = cache + (state -> (globalBest, state))
-      (globalBest, state)
-    } else if (hasMaxRobots(blueprints, robots)) {
+    var seen = Set[State]()
 
-      ???
-    } else {
+    queue.enqueue(start)
+    var best = 0
+    var bestState = start
+    val maxQueueDepth = 5000
 
-      val newResources = robots.map { case ((resource, nbr)) =>
-        (resource -> nbr)
+    while (queue.nonEmpty) {
+      var state = queue.dequeue()
+      while (seen.contains(state)) {
+        state = queue.dequeue()
       }
 
-      var r1 = pickBest(
-        blueprints,
-        blueprints
-          .filter { blueprint =>
-            if (waited) {
+      // assert(i < 900000)
+      if (i % 10000 == 0) {
+        println(
+          s"i: $i, best: $best, current state: $state, score: ${score(state)}, queue.size: ${queue.size}"
+        )
+      }
+      i += 1
+
+      val nbrGeodes = state.resources.getOrElse("geode", 0)
+      val nbrGeodeRobots = state.robots.getOrElse("geode", 0)
+
+      if (state.minutesLeft == 0) {
+        best = Math.max(best, (state.resources.getOrElse("geode", 0)))
+        bestState = state
+      } else if (
+        nbrGeodes + nbrGeodeRobots * state.minutesLeft + sum(
+          state.minutesLeft - 1
+        ) < best
+      ) {
+        // Todo continue
+        // todo else if (hasMaxRobots(blueprints, robots)) { continue
+      } else {
+
+        val newResources = state.robots.map { case ((resource, nbr)) =>
+          (resource -> nbr)
+        }
+
+        var r1: Seq[State] = pickBest(
+          blueprints,
+          blueprints
+            .filter { blueprint =>
               blueprint.costs.forall { case (resource, needed) =>
-                val amount = resources.getOrElse(resource, 0) - 1
+                val amount = state.resources.getOrElse(resource, 0)
                 amount >= needed
               }
-            } else {
-              blueprint.costs.forall { case (resource, needed) =>
-                val amount = resources.getOrElse(resource, 0)
-                amount >= needed
-              }
-            }
-          },
-        robots,
-        minutesLeft
-      )
-        .map { blueprint =>
+            },
+          state.robots,
+          state.minutesLeft
+        ).map { blueprint =>
           val resourcesNeeded = blueprint.costs.map { case (resource, amount) =>
             resource -> amount.toInt
           }.toMap
-          var resourcesAfterPurchase = sub(resources, resourcesNeeded)
-          val newRobots =
-            robots.updated(
-              blueprint.name,
-              robots.getOrElse(blueprint.name, 0) + 1
-            )
 
-          findBest(
-            blueprints,
+          var resourcesAfterPurchase = sub(state.resources, resourcesNeeded)
+          val newRobots: Map[String, Int] = state.robots.updated(
+            blueprint.name,
+            state.robots.getOrElse(blueprint.name, 0) + 1
+          )
+
+          State(
             newRobots,
             add(resourcesAfterPurchase, newResources),
-            minutesLeft - 1,
-            false
+            state.minutesLeft - 1
           )
         }
+        r1.foreach { s =>
+          queue.enqueue(s)
+        }
 
-      lazy val r0 = findBest(
-        blueprints,
-        robots,
-        add(resources, newResources),
-        minutesLeft - 1,
-        true
-      )
+        queue.enqueue(
+          State(
+            state.robots,
+            add(state.resources, newResources),
+            state.minutesLeft - 1
+          )
+        )
+      }
 
-      val maxOre = blueprints
-        .map(_.costs.getOrElse("ore", 0))
-        .maxOption
-        .getOrElse(0)
-
-      r1 = r1 :+ r0
-
-      val res = r1.maxBy(_._1)
-      globalBest = Math.max(res._1, globalBest)
-      cache = cache + (state -> res)
-      res
+      if (queue.size > maxQueueDepth) {
+        queue = queue.take(maxQueueDepth)
+      }
     }
+
+    (best, bestState)
   }
 
   var sumCache = Map[Int, Int](0 -> 0)
@@ -144,22 +155,6 @@ object Day19 {
       res
 
     }
-  }
-
-  private def hasMaxRobots(blueprints: Seq[Robot], robots: Map[String, Int]) = {
-    val nbrObsidian = robots.getOrElse("obsidian", 0)
-    val nbrClay = robots.getOrElse("clay", 0)
-    val nbrOre = robots.getOrElse("ore", 0)
-
-    val maxObsidian =
-      blueprints.map(_.costs.getOrElse("obsidian", 0)).maxOption.getOrElse(0)
-    val maxClay =
-      blueprints.map(_.costs.getOrElse("clay", 0)).maxOption.getOrElse(0)
-    val maxOre = blueprints
-      .map(_.costs.getOrElse("ore", 0))
-      .maxOption
-      .getOrElse(0)
-    nbrObsidian == maxObsidian && nbrClay == maxClay && nbrOre == maxOre
   }
 
   private def pickBest(
@@ -233,4 +228,21 @@ object Day19 {
         .toSeq
     )
   }
+
+  private def hasMaxRobots(blueprints: Seq[Robot], robots: Map[String, Int]) = {
+    val nbrObsidian = robots.getOrElse("obsidian", 0)
+    val nbrClay = robots.getOrElse("clay", 0)
+    val nbrOre = robots.getOrElse("ore", 0)
+
+    val maxObsidian =
+      blueprints.map(_.costs.getOrElse("obsidian", 0)).maxOption.getOrElse(0)
+    val maxClay =
+      blueprints.map(_.costs.getOrElse("clay", 0)).maxOption.getOrElse(0)
+    val maxOre = blueprints
+      .map(_.costs.getOrElse("ore", 0))
+      .maxOption
+      .getOrElse(0)
+    nbrObsidian == maxObsidian && nbrClay == maxClay && nbrOre == maxOre
+  }
+
 }
