@@ -10,7 +10,8 @@ object Day19 {
   private val obsidian = "obsidian"
   private val geode = "geode"
 
-  case class Robot(name: String, costs: Map[String, Int])
+  case class Blueprint(robotType: String, costs: Map[String, Int])
+
   case class State(
       robots: Map[String, Int],
       resources: Map[String, Int],
@@ -31,14 +32,14 @@ object Day19 {
     val blueprints = input.take(3).map(parse)
     val robots = Map[String, Int](ore -> 1)
     blueprints.map { case (id, robotBlueprints) =>
-      val (best, state) =
+      val (best, _) =
         findBest(robotBlueprints, State(robots, Map(), 32), 20000)
       best
     }.product
   }
 
   private def findBest(
-      blueprints: Seq[Robot],
+      blueprints: Seq[Blueprint],
       start: State,
       maxQueueDepth: Int
   ): (Int, State) = {
@@ -76,23 +77,19 @@ object Day19 {
       assert(i < 1000000)
       i += 1
 
-      assert(state.minutesLeft >= 0)
       if (state.minutesLeft == 0) {
         best = Math.max(best, (state.resources.getOrElse(geode, 0)))
         bestState = state
       } else if (
         nbrGeode + nbrGeodeRobots * state.minutesLeft + sum(
           state.minutesLeft - 1
-        ) < best
+        ) >= best
       ) {
-        // Todo continue
-        // todo else if (hasMaxRobots(blueprints, robots)) { continue
-      } else {
         val newStates: Seq[State] = filterBlueprints(
           maxObsidian,
           maxClay,
           maxOre,
-          blueprints.filter(b => hasRobotsFor(state.robots, b)), // todo remove
+          blueprints.filter(b => hasRobotsFor(state.robots, b)),
           state.robots,
           state.minutesLeft
         ).map { blueprint =>
@@ -117,12 +114,10 @@ object Day19 {
             newResources = sub(newResources, blueprint.costs)
 
             newRobots = state.robots.updated(
-              blueprint.name,
-              state.robots.getOrElse(blueprint.name, 0) + 1
+              blueprint.robotType,
+              state.robots.getOrElse(blueprint.robotType, 0) + 1
             )
           }
-
-          assert(newResources.forall(r => r._2 >= 0))
 
           val newMinutesLeft = state.minutesLeft - waitTime
 
@@ -134,9 +129,6 @@ object Day19 {
         }
         newStates.foreach { s =>
           queue.enqueue(s)
-        }
-        if (newStates.isEmpty) {
-          assert(1 == 3)
         }
       }
 
@@ -161,14 +153,14 @@ object Day19 {
     m.getOrElse(k, 0)
   }
 
-  private def canAfford(resources: Map[String, Int], blueprint: Robot) = {
+  private def canAfford(resources: Map[String, Int], blueprint: Blueprint) = {
     blueprint.costs.forall { case (resource, needed) =>
       val amount = resources.getOrElse(resource, 0)
       amount >= needed
     }
   }
 
-  private def hasRobotsFor(robots: Map[String, Int], blueprint: Robot) = {
+  private def hasRobotsFor(robots: Map[String, Int], blueprint: Blueprint) = {
     blueprint.costs.forall { (name, _) =>
       get(robots, name) > 0
     }
@@ -192,23 +184,23 @@ object Day19 {
       maxObsidian: Int,
       maxClay: Int,
       maxOre: Int,
-      affordableBlueprints: Seq[Robot],
+      affordableBlueprints: Seq[Blueprint],
       robots: Map[String, Int],
       minutesLeft: Int
-  ): Seq[Robot] = {
+  ): Seq[Blueprint] = {
     val nbrObsidian = robots.getOrElse(obsidian, 0)
     val nbrClay = robots.getOrElse(clay, 0)
     val nbrOre = robots.getOrElse(ore, 0)
 
     var result = affordableBlueprints
     if (minutesLeft <= 4 || nbrObsidian >= maxObsidian) {
-      result = result.filterNot(_.name == obsidian)
+      result = result.filterNot(_.robotType == obsidian)
     }
     if (minutesLeft <= 7 || nbrClay >= maxClay) {
-      result = result.filterNot(_.name == clay)
+      result = result.filterNot(_.robotType == clay)
     }
     if (minutesLeft <= 17 || nbrOre >= maxOre) {
-      result = result.filterNot(_.name == ore)
+      result = result.filterNot(_.robotType == ore)
     }
     result
   }
@@ -227,7 +219,7 @@ object Day19 {
     a ++ b.map { case (k, v) => k -> (a.getOrElse(k, 0) - v) }
   }
 
-  private def parse(line: String): (Int, Seq[Robot]) = {
+  private def parse(line: String): (Int, Seq[Blueprint]) = {
     val split = line.split(":")
     val id = split.head.split("Blueprint ").last.toInt
     val robots = split.last
@@ -237,9 +229,9 @@ object Day19 {
         .split("""\.""")
         .map {
           case s" Each $name robot costs $a $aOre and $b $bOre" =>
-            Robot(name, Map(aOre -> a.toInt, bOre -> b.toInt))
+            Blueprint(name, Map(aOre -> a.toInt, bOre -> b.toInt))
           case s" Each $name robot costs $a $aOre" =>
-            Robot(name, Map(aOre -> a.toInt))
+            Blueprint(name, Map(aOre -> a.toInt))
         }
         .toSeq
     )
