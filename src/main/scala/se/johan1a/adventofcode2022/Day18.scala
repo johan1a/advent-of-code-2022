@@ -71,7 +71,6 @@ object Day18 {
     sum
   }
 
-
   private def flood(cubes: Set[Vec3], air: Set[Vec3], pos: Vec3): PocketT = {
     var pocket = Set[Vec3]()
     val queue = Queue[Vec3](pos)

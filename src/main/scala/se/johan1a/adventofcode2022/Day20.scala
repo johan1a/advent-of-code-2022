@@ -33,7 +33,7 @@ object Day20 {
     var i = 0
     while (i < input.size) {
       val node = nodes(i)
-      move(node, node.n % (nodes.size-1))
+      move(node, node.n % (nodes.size - 1))
       i += 1
     }
     nodesToString(first)
