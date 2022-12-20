@@ -26,17 +26,12 @@ object Day19 {
   }
 
   private def score(state: State) = {
-    100 * get(state.resources, "geode")
-      + 100 * get(state.robots, "geode") * state.minutesLeft
-
-      + 20 * get(state.resources, "obsidian")
-      + 20 * get(state.robots, "obsidian") * state.minutesLeft
-
-      + 10 * get(state.resources, "clay")
-      + 10 * get(state.robots, "clay") * state.minutesLeft
-
-      + 10 * get(state.resources, "ore")
-      + 10 * get(state.robots, "ore") * state.minutesLeft
+    (
+      -get(state.robots, "ore"),
+      -get(state.robots, "clay"),
+      -get(state.robots, "obsidian"),
+      -get(state.robots, "geode")
+    )
   }
 
   private def get(m: Map[String, Int], k: String): Int = {
@@ -44,16 +39,25 @@ object Day19 {
   }
 
   private def findBest(
-    blueprints: Seq[Robot],
+      blueprints: Seq[Robot],
       start: State
   ): (Int, State) = {
     var i = 0
 
-    var queue = PriorityQueue[State]()(Ordering.by { s =>
-      -score(s)
-    })
-
     var seen = Set[State]()
+
+    var maxObsidian =
+      blueprints.map(_.costs.getOrElse("obsidian", 0)).maxOption.getOrElse(0)
+    var maxClay =
+      blueprints.map(_.costs.getOrElse("clay", 0)).maxOption.getOrElse(0)
+    var maxOre = blueprints
+      .map(_.costs.getOrElse("ore", 0))
+      .maxOption
+      .getOrElse(0)
+
+    var queue = PriorityQueue[State]()(Ordering.by { s =>
+      score(s)
+    })
 
     queue.enqueue(start)
     var best = 0
@@ -62,26 +66,35 @@ object Day19 {
 
     while (queue.nonEmpty) {
       var state = queue.dequeue()
-      while (seen.contains(state)) {
+      while (queue.nonEmpty && seen.contains(state)) {
         state = queue.dequeue()
       }
+      seen = seen + state
 
-      // assert(i < 900000)
+
+      val nbrGeode = state.resources.getOrElse("geode", 0)
+
+      val nbrGeodeRobots = state.robots.getOrElse("geode", 0)
+
+      best = Math.max(best, nbrGeode + nbrGeodeRobots * state.minutesLeft)
+
+
+      assert(i < 1000000)
       if (i % 10000 == 0) {
         println(
-          s"i: $i, best: $best, current state: $state, score: ${score(state)}, queue.size: ${queue.size}"
+          s"i: $i, best: $best, current robots: ${state.robots}, res: ${state.resources}, score: ${score(
+            state
+          )}, queue.size: ${queue.size}, minutes left: ${state.minutesLeft}"
         )
       }
       i += 1
 
-      val nbrGeodes = state.resources.getOrElse("geode", 0)
-      val nbrGeodeRobots = state.robots.getOrElse("geode", 0)
-
+      assert(state.minutesLeft >= 0)
       if (state.minutesLeft == 0) {
         best = Math.max(best, (state.resources.getOrElse("geode", 0)))
         bestState = state
       } else if (
-        nbrGeodes + nbrGeodeRobots * state.minutesLeft + sum(
+        nbrGeode + nbrGeodeRobots * state.minutesLeft + sum(
           state.minutesLeft - 1
         ) < best
       ) {
@@ -89,49 +102,57 @@ object Day19 {
         // todo else if (hasMaxRobots(blueprints, robots)) { continue
       } else {
 
-        val newResources = state.robots.map { case ((resource, nbr)) =>
-          (resource -> nbr)
+        val producedResources = state.robots.map { case (resource, nbr) =>
+          resource -> nbr
         }
 
         var r1: Seq[State] = pickBest(
           blueprints,
-          blueprints
-            .filter { blueprint =>
-              blueprint.costs.forall { case (resource, needed) =>
-                val amount = state.resources.getOrElse(resource, 0)
-                amount >= needed
-              }
-            },
+          blueprints.filter(b => hasRobotsFor(state.robots, b)), // todo remove
           state.robots,
           state.minutesLeft
         ).map { blueprint =>
-          val resourcesNeeded = blueprint.costs.map { case (resource, amount) =>
-            resource -> amount.toInt
-          }.toMap
+          var waitTime = 1
+          var newResources = state.resources
+          // wait until we can afford this robot
+          while (
+            !canAfford(
+              newResources,
+              blueprint
+            ) && state.minutesLeft - waitTime > 0
+          ) {
+            newResources = add(newResources, producedResources)
+            waitTime += 1
+          }
+          // always takes at least 1 minute
+          newResources = add(newResources, producedResources)
 
-          var resourcesAfterPurchase = sub(state.resources, resourcesNeeded)
-          val newRobots: Map[String, Int] = state.robots.updated(
-            blueprint.name,
-            state.robots.getOrElse(blueprint.name, 0) + 1
-          )
+          var newRobots = state.robots
+          if (canAfford(newResources, blueprint)) {
+            newResources = sub(newResources, blueprint.costs)
+
+            newRobots = state.robots.updated(
+              blueprint.name,
+              state.robots.getOrElse(blueprint.name, 0) + 1
+            )
+          }
+
+          assert(newResources.forall(r => r._2 >= 0))
+
+          val newMinutesLeft = state.minutesLeft - waitTime
 
           State(
             newRobots,
-            add(resourcesAfterPurchase, newResources),
-            state.minutesLeft - 1
+            newResources,
+            newMinutesLeft
           )
         }
         r1.foreach { s =>
           queue.enqueue(s)
         }
-
-        queue.enqueue(
-          State(
-            state.robots,
-            add(state.resources, newResources),
-            state.minutesLeft - 1
-          )
-        )
+        if (r1.isEmpty) {
+          assert(1 == 3)
+        }
       }
 
       if (queue.size > maxQueueDepth) {
@@ -142,10 +163,23 @@ object Day19 {
     (best, bestState)
   }
 
+  private def canAfford(resources: Map[String, Int], blueprint: Robot) = {
+    blueprint.costs.forall { case (resource, needed) =>
+      val amount = resources.getOrElse(resource, 0)
+      amount >= needed
+    }
+  }
+
+  private def hasRobotsFor(robots: Map[String, Int], blueprint: Robot) = {
+    blueprint.costs.forall { (name, _) =>
+      get(robots, name) > 0
+    }
+  }
+
   var sumCache = Map[Int, Int](0 -> 0)
 
   private def sum(minutesLeft: Int): Int = {
-    if (minutesLeft == 0) {
+    if (minutesLeft <= 0) {
       0
     } else if (sumCache.contains(minutesLeft)) {
       sumCache(minutesLeft)
@@ -175,10 +209,6 @@ object Day19 {
       .map(_.costs.getOrElse("ore", 0))
       .maxOption
       .getOrElse(0)
-
-    // println(
-    //   s"obsidian: $nbrObsidian / $maxObsidian, clay: $nbrClay / $maxClay, ore: $nbrOre / $maxOre"
-    // )
 
     var result = affordableBlueprints
     if (nbrObsidian >= maxObsidian) {
