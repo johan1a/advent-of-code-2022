@@ -13,18 +13,21 @@ object Day20 {
 
     var first: Node = null
     var prev: Node = null
-    val nodes = input.map(_.toInt).map { n =>
-      val node = Node(n, prev = prev, next = null)
-      if (first == null) {
-        first = node
-      }
-      if (prev != null) {
-        prev.next = node
-      }
+    val nodes = input
+      .map(_.toInt)
+      .map { n =>
+        val node = Node(n, prev = prev, next = null)
+        if (first == null) {
+          first = node
+        }
+        if (prev != null) {
+          prev.next = node
+        }
 
-      prev = node
-      node
-    }.toArray
+        prev = node
+        node
+      }
+      .toArray
     first.prev = prev
     prev.next = first
 
@@ -39,10 +42,10 @@ object Day20 {
     while (queue.nonEmpty) {
       val node = queue.dequeue()
       println(s"moving ${node.n} ${node.n} steps")
-      val next = find(node, node.n, nodes.size)
-      println(s"$node -> $next")
-      insertAfter(node, next)
-      if(nodes.size < 20) {
+
+      move2(node, node.n, nodes.size)
+
+      if (nodes.size < 20) {
         printNodes(first)
       }
       i += 1
@@ -55,6 +58,42 @@ object Day20 {
     println(s"a: ${a.n}, b: ${b.n}, c: ${c.n}")
 
     a.n + b.n + c.n
+  }
+
+  private def move2(node: Node, steps: Int, size: Int) = {
+    if (steps > 0) {
+      var i = 0
+      while (i < steps) {
+        val next = node.next
+        val secondNext = next.next
+
+        node.prev.next = next
+        next.prev = node.prev
+
+        next.next = node
+        node.prev = next
+        node.next = secondNext
+        secondNext.prev = node
+        i += 1
+      }
+    } else if (steps < 0) {
+      var i = 0
+      while (i < -steps) {
+        val prev = node.prev
+        val secondPrev = prev.prev
+
+        node.next.prev = prev
+        prev.next = node.next
+
+        prev.prev = node
+        node.next = prev
+        node.prev = secondPrev
+        secondPrev.next = node
+        i += 1
+      }
+
+    }
+
   }
 
   private def find(node: Node, steps: Int, size: Int) = {
