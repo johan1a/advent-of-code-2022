@@ -6,7 +6,6 @@ import scala.collection.mutable.Queue
 object Day20 {
 
   case class Node(var n: Int, var prev: Node, var next: Node) {
-//    override def toString: String = s"[${prev.n.toString}, ${n.toString}, ${next.n.toString}]"
     override def toString: String = n.toString
   }
 
@@ -39,7 +38,6 @@ object Day20 {
     var i = 0
     while (queue.nonEmpty) {
       val node = queue.dequeue()
-      assert(node.n == nodes(i).n)
       println(s"moving ${node.n} ${node.n} steps")
       val next = find(node, node.n, nodes.size)
       println(s"$node -> $next")
@@ -62,13 +60,14 @@ object Day20 {
   private def find(node: Node, steps: Int, size: Int) = {
     var next = node
     var i = 0
-    if (steps >= 0) {
+    if (steps > 0) {
       while (i < steps) {
         next = next.next
         i += 1
       }
-    } else {
-      while (i < -steps + 1) {
+    } else if (steps < 0) {
+      next = next.prev
+      while (i < -steps) {
         next = next.prev
         i += 1
       }
@@ -77,11 +76,9 @@ object Day20 {
   }
 
   private def insertAfter(a: Node, b: Node): Unit = {
-    if (a != b) {
-
+    if (a != b && a != b.next) {
       val aPrev = a.prev
       val aNext = a.next
-      val bPrev = b.prev
       val bNext = b.next
 
       aPrev.next = aNext
@@ -107,6 +104,7 @@ object Day20 {
       print(", ")
       node = node.next
     }
+    println()
     println()
 
   }
