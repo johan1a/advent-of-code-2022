@@ -5,6 +5,11 @@ import scala.collection.mutable.PriorityQueue
 
 object Day19 {
 
+  private val ore = "ore"
+  private val clay = "clay"
+  private val obsidian = "obsidian"
+  private val geode = "geode"
+
   case class Robot(name: String, costs: Map[String, Int])
   case class State(
       robots: Map[String, Int],
@@ -14,7 +19,7 @@ object Day19 {
 
   def part1(input: Seq[String]): Int = {
     val blueprints = input.map(parse)
-    val robots = Map[String, Int]("ore" -> 1)
+    val robots = Map[String, Int](ore -> 1)
     blueprints.map { case (id, robotBlueprints) =>
       println(robots)
       val (best, state) = findBest(robotBlueprints, State(robots, Map(), 24), 5000)
@@ -27,7 +32,7 @@ object Day19 {
 
   def part2(input: Seq[String]): Int = {
     val blueprints = input.take(3).map(parse)
-    val robots = Map[String, Int]("ore" -> 1)
+    val robots = Map[String, Int](ore -> 1)
     blueprints.map { case (id, robotBlueprints) =>
       val (best, state) = findBest(robotBlueprints, State(robots, Map(), 32), 20000)
       println(
@@ -44,13 +49,12 @@ object Day19 {
   ): (Int, State) = {
     var i = 0
 
-
     val maxObsidian =
-      blueprints.map(_.costs.getOrElse("obsidian", 0)).maxOption.getOrElse(0)
+      blueprints.map(_.costs.getOrElse(obsidian, 0)).maxOption.getOrElse(0)
     val maxClay =
-      blueprints.map(_.costs.getOrElse("clay", 0)).maxOption.getOrElse(0)
+      blueprints.map(_.costs.getOrElse(clay, 0)).maxOption.getOrElse(0)
     val maxOre = blueprints
-      .map(_.costs.getOrElse("ore", 0))
+      .map(_.costs.getOrElse(ore, 0))
       .maxOption
       .getOrElse(0)
 
@@ -70,8 +74,8 @@ object Day19 {
       }
       seen = seen + state
 
-      val nbrGeode = state.resources.getOrElse("geode", 0)
-      val nbrGeodeRobots = state.robots.getOrElse("geode", 0)
+      val nbrGeode = state.resources.getOrElse(geode , 0)
+      val nbrGeodeRobots = state.robots.getOrElse(geode , 0)
       best = Math.max(best, nbrGeode + nbrGeodeRobots * state.minutesLeft)
 
       assert(i < 1000000)
@@ -86,7 +90,7 @@ object Day19 {
 
       assert(state.minutesLeft >= 0)
       if (state.minutesLeft == 0) {
-        best = Math.max(best, (state.resources.getOrElse("geode", 0)))
+        best = Math.max(best, (state.resources.getOrElse(geode , 0)))
         bestState = state
       } else if (
         nbrGeode + nbrGeodeRobots * state.minutesLeft + sum(
@@ -101,7 +105,8 @@ object Day19 {
           maxClay,
           maxOre,
           blueprints.filter(b => hasRobotsFor(state.robots, b)), // todo remove
-          state.robots
+          state.robots,
+          state.minutesLeft
         ).map { blueprint =>
           var waitTime = 1
           var newResources = state.resources
@@ -152,15 +157,16 @@ object Day19 {
       }
     }
 
+    println(s"checked ${seen.size} states in total")
     (best, bestState)
   }
 
   private def score(state: State) = {
     (
-      -get(state.robots, "ore"),
-      -get(state.robots, "clay"),
-      -get(state.robots, "obsidian"),
-      -get(state.robots, "geode")
+      -get(state.robots, ore),
+      -get(state.robots, clay),
+      -get(state.robots, obsidian),
+      -get(state.robots, geode )
     )
   }
 
@@ -200,21 +206,22 @@ object Day19 {
       maxClay: Int,
       maxOre: Int,
       affordableBlueprints: Seq[Robot],
-      robots: Map[String, Int]
+      robots: Map[String, Int],
+      minutesLeft: Int
   ): Seq[Robot] = {
-    val nbrObsidian = robots.getOrElse("obsidian", 0)
-    val nbrClay = robots.getOrElse("clay", 0)
-    val nbrOre = robots.getOrElse("ore", 0)
+    val nbrObsidian = robots.getOrElse(obsidian, 0)
+    val nbrClay = robots.getOrElse(clay, 0)
+    val nbrOre = robots.getOrElse(ore, 0)
 
     var result = affordableBlueprints
-    if (nbrObsidian >= maxObsidian) {
-      result = result.filterNot(_.name == "obsidian")
+    if (minutesLeft <= 4 || nbrObsidian >= maxObsidian) {
+      result = result.filterNot(_.name == obsidian)
     }
-    if (nbrClay >= maxClay) {
-      result = result.filterNot(_.name == "clay")
+    if (minutesLeft <= 7 || nbrClay >= maxClay) {
+      result = result.filterNot(_.name == clay)
     }
-    if (nbrOre >= maxOre) {
-      result = result.filterNot(_.name == "ore")
+    if (minutesLeft <= 17 || nbrOre >= maxOre) {
+      result = result.filterNot(_.name == ore)
     }
     result
   }
