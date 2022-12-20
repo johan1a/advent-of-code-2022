@@ -5,12 +5,11 @@ import scala.collection.mutable.Queue
 
 object Day20 {
 
-  case class Node(var n: Int, var prev: Node, var next: Node) {
+  case class Node(var n: Long, var prev: Node, var next: Node) {
     override def toString: String = n.toString
   }
 
-  def part1(input: Seq[String]): Int = {
-
+  def part1(input: Seq[String]): Long = {
     var first: Node = null
     var prev: Node = null
     val nodes = input
@@ -31,36 +30,65 @@ object Day20 {
     first.prev = prev
     prev.next = first
 
-    println("original:")
-    printNodes(first)
-    println()
-
-    val queue = Queue[Node]()
-    queue ++= nodes
-
     var i = 0
-    while (queue.nonEmpty) {
-      val node = queue.dequeue()
-      println(s"moving ${node.n} ${node.n} steps")
-
-      move2(node, node.n, nodes.size)
-
-      if (nodes.size < 20) {
-        printNodes(first)
-      }
+    while (i < input.size) {
+      val node = nodes(i)
+      move(node, node.n % (nodes.size-1))
       i += 1
     }
-    printNodes(first)
+    nodesToString(first)
     val zero = nodes.find(_.n == 0).get
-    val a = find(zero, 1000, nodes.size)
-    val b = find(a, 1000, nodes.size)
-    val c = find(b, 1000, nodes.size)
+    val a = find(zero, 1000)
+    val b = find(a, 1000)
+    val c = find(b, 1000)
     println(s"a: ${a.n}, b: ${b.n}, c: ${c.n}")
 
     a.n + b.n + c.n
   }
 
-  private def move2(node: Node, steps: Int, size: Int) = {
+  def part2(input: Seq[String]): Long = {
+    val decryptionKey = 811589153L
+    var first: Node = null
+    var prev: Node = null
+    val nodes = input
+      .map(_.toInt)
+      .map { n =>
+        val node = Node(n * decryptionKey, prev = prev, next = null)
+        if (first == null) {
+          first = node
+        }
+        if (prev != null) {
+          prev.next = node
+        }
+
+        prev = node
+        node
+      }
+      .toArray
+    first.prev = prev
+    prev.next = first
+
+    println("initial")
+    println(nodesToString(first))
+    0.until(10).foreach { _ =>
+      var i = 0
+      while (i < input.size) {
+        val node = nodes(i)
+        move(node, node.n % (nodes.size - 1))
+        i += 1
+      }
+    }
+
+    val zero = nodes.find(_.n == 0).get
+    val a = find(zero, 1000)
+    val b = find(a, 1000)
+    val c = find(b, 1000)
+    println(s"a: ${a.n}, b: ${b.n}, c: ${c.n}")
+
+    a.n + b.n + c.n
+  }
+
+  private def move(node: Node, steps: Long) = {
     if (steps > 0) {
       var i = 0
       while (i < steps) {
@@ -96,7 +124,7 @@ object Day20 {
 
   }
 
-  private def find(node: Node, steps: Int, size: Int) = {
+  private def find(node: Node, steps: Long) = {
     var next = node
     var i = 0
     if (steps > 0) {
@@ -114,37 +142,16 @@ object Day20 {
     next
   }
 
-  private def insertAfter(a: Node, b: Node): Unit = {
-    if (a != b && a != b.next) {
-      val aPrev = a.prev
-      val aNext = a.next
-      val bNext = b.next
-
-      aPrev.next = aNext
-      aNext.prev = aPrev
-
-      b.next = a
-      a.prev = b
-
-      a.next = bNext
-      bNext.prev = a
-    }
-  }
-
-  def part2(input: Seq[String]): Int = {
-    -1
-  }
-
-  def printNodes(start: Node) = {
+  def nodesToString(start: Node) = {
+    var s = ""
     var node = start.next
-    print(s"${start.n}, ")
+    s += (s"${start.n}, ")
     while (node.n != start.n) {
-      print(node.n)
-      print(", ")
+      s += (node.n)
+      s += (", ")
       node = node.next
     }
-    println()
-    println()
-
+    s += "\n\n"
+    s
   }
 }
