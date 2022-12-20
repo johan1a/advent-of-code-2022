@@ -37,19 +37,6 @@ object Day19 {
     }.product
   }
 
-  private def score(state: State) = {
-    (
-      -get(state.robots, "ore"),
-      -get(state.robots, "clay"),
-      -get(state.robots, "obsidian"),
-      -get(state.robots, "geode")
-    )
-  }
-
-  private def get(m: Map[String, Int], k: String): Int = {
-    m.getOrElse(k, 0)
-  }
-
   private def findBest(
       blueprints: Seq[Robot],
       start: State,
@@ -99,19 +86,14 @@ object Day19 {
         // Todo continue
         // todo else if (hasMaxRobots(blueprints, robots)) { continue
       } else {
-
-        val producedResources = state.robots.map { case (resource, nbr) =>
-          resource -> nbr
-        }
-
-        val newStates: Seq[State] = pickBest(
+        val newStates: Seq[State] = filterBlueprints(
           blueprints,
           blueprints.filter(b => hasRobotsFor(state.robots, b)), // todo remove
-          state.robots,
-          state.minutesLeft
+          state.robots
         ).map { blueprint =>
           var waitTime = 1
           var newResources = state.resources
+          val producedResources = state.robots
           // wait until we can afford this robot
           while (
             !canAfford(
@@ -161,6 +143,19 @@ object Day19 {
     (best, bestState)
   }
 
+  private def score(state: State) = {
+    (
+      -get(state.robots, "ore"),
+      -get(state.robots, "clay"),
+      -get(state.robots, "obsidian"),
+      -get(state.robots, "geode")
+    )
+  }
+
+  private def get(m: Map[String, Int], k: String): Int = {
+    m.getOrElse(k, 0)
+  }
+
   private def canAfford(resources: Map[String, Int], blueprint: Robot) = {
     blueprint.costs.forall { case (resource, needed) =>
       val amount = resources.getOrElse(resource, 0)
@@ -188,21 +183,20 @@ object Day19 {
     }
   }
 
-  private def pickBest(
+  private def filterBlueprints(
       blueprints: Seq[Robot],
       affordableBlueprints: Seq[Robot],
-      robots: Map[String, Int],
-      minutesLeft: Int
+      robots: Map[String, Int]
   ): Seq[Robot] = {
     val nbrObsidian = robots.getOrElse("obsidian", 0)
     val nbrClay = robots.getOrElse("clay", 0)
     val nbrOre = robots.getOrElse("ore", 0)
 
-    var maxObsidian =
+    val maxObsidian =
       blueprints.map(_.costs.getOrElse("obsidian", 0)).maxOption.getOrElse(0)
-    var maxClay =
+    val maxClay =
       blueprints.map(_.costs.getOrElse("clay", 0)).maxOption.getOrElse(0)
-    var maxOre = blueprints
+    val maxOre = blueprints
       .map(_.costs.getOrElse("ore", 0))
       .maxOption
       .getOrElse(0)
