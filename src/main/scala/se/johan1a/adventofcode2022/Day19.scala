@@ -17,12 +17,24 @@ object Day19 {
     val robots = Map[String, Int]("ore" -> 1)
     blueprints.map { case (id, robotBlueprints) =>
       println(robots)
-      val (best, state) = findBest(robotBlueprints, State(robots, Map(), 24))
+      val (best, state) = findBest(robotBlueprints, State(robots, Map(), 24), 5000)
       println(
         s"id: $id, best: $best, robots: ${state.robots}, resources: ${state.resources}"
       )
       best * id
     }.sum
+  }
+
+  def part2(input: Seq[String]): Int = {
+    val blueprints = input.take(3).map(parse)
+    val robots = Map[String, Int]("ore" -> 1)
+    blueprints.map { case (id, robotBlueprints) =>
+      val (best, state) = findBest(robotBlueprints, State(robots, Map(), 32), 20000)
+      println(
+        s"id: $id, best: $best, robots: ${state.robots}, resources: ${state.resources}"
+      )
+      best
+    }.product
   }
 
   private def score(state: State) = {
@@ -40,21 +52,12 @@ object Day19 {
 
   private def findBest(
       blueprints: Seq[Robot],
-      start: State
+      start: State,
+      maxQueueDepth: Int
   ): (Int, State) = {
     var i = 0
 
     var seen = Set[State]()
-
-    var maxObsidian =
-      blueprints.map(_.costs.getOrElse("obsidian", 0)).maxOption.getOrElse(0)
-    var maxClay =
-      blueprints.map(_.costs.getOrElse("clay", 0)).maxOption.getOrElse(0)
-    var maxOre = blueprints
-      .map(_.costs.getOrElse("ore", 0))
-      .maxOption
-      .getOrElse(0)
-
     var queue = PriorityQueue[State]()(Ordering.by { s =>
       score(s)
     })
@@ -62,7 +65,6 @@ object Day19 {
     queue.enqueue(start)
     var best = 0
     var bestState = start
-    val maxQueueDepth = 5000
 
     while (queue.nonEmpty) {
       var state = queue.dequeue()
@@ -71,13 +73,9 @@ object Day19 {
       }
       seen = seen + state
 
-
       val nbrGeode = state.resources.getOrElse("geode", 0)
-
       val nbrGeodeRobots = state.robots.getOrElse("geode", 0)
-
       best = Math.max(best, nbrGeode + nbrGeodeRobots * state.minutesLeft)
-
 
       assert(i < 1000000)
       if (i % 10000 == 0) {
@@ -106,7 +104,7 @@ object Day19 {
           resource -> nbr
         }
 
-        var r1: Seq[State] = pickBest(
+        val newStates: Seq[State] = pickBest(
           blueprints,
           blueprints.filter(b => hasRobotsFor(state.robots, b)), // todo remove
           state.robots,
@@ -147,10 +145,10 @@ object Day19 {
             newMinutesLeft
           )
         }
-        r1.foreach { s =>
+        newStates.foreach { s =>
           queue.enqueue(s)
         }
-        if (r1.isEmpty) {
+        if (newStates.isEmpty) {
           assert(1 == 3)
         }
       }
@@ -187,7 +185,6 @@ object Day19 {
       val res = minutesLeft + sum(minutesLeft - 1)
       sumCache = sumCache + (minutesLeft -> res)
       res
-
     }
   }
 
@@ -237,14 +234,10 @@ object Day19 {
     a ++ b.map { case (k, v) => k -> (a.getOrElse(k, 0) - v) }
   }
 
-  def part2(input: Seq[String]): Int = {
-    -1
-  }
-
   private def parse(line: String): (Int, Seq[Robot]) = {
-    var split = line.split(":")
+    val split = line.split(":")
     val id = split.head.split("Blueprint ").last.toInt
-    var robots = split.last
+    val robots = split.last
     (
       id,
       robots
