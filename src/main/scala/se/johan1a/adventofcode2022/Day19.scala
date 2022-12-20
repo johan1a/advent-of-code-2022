@@ -44,6 +44,16 @@ object Day19 {
   ): (Int, State) = {
     var i = 0
 
+
+    val maxObsidian =
+      blueprints.map(_.costs.getOrElse("obsidian", 0)).maxOption.getOrElse(0)
+    val maxClay =
+      blueprints.map(_.costs.getOrElse("clay", 0)).maxOption.getOrElse(0)
+    val maxOre = blueprints
+      .map(_.costs.getOrElse("ore", 0))
+      .maxOption
+      .getOrElse(0)
+
     var seen = Set[State]()
     var queue = PriorityQueue[State]()(Ordering.by { s =>
       score(s)
@@ -87,7 +97,9 @@ object Day19 {
         // todo else if (hasMaxRobots(blueprints, robots)) { continue
       } else {
         val newStates: Seq[State] = filterBlueprints(
-          blueprints,
+          maxObsidian,
+          maxClay,
+          maxOre,
           blueprints.filter(b => hasRobotsFor(state.robots, b)), // todo remove
           state.robots
         ).map { blueprint =>
@@ -169,7 +181,7 @@ object Day19 {
     }
   }
 
-  var sumCache = Map[Int, Int](0 -> 0)
+  private var sumCache = Map[Int, Int](0 -> 0)
 
   private def sum(minutesLeft: Int): Int = {
     if (minutesLeft <= 0) {
@@ -184,22 +196,15 @@ object Day19 {
   }
 
   private def filterBlueprints(
-      blueprints: Seq[Robot],
+      maxObsidian: Int,
+      maxClay: Int,
+      maxOre: Int,
       affordableBlueprints: Seq[Robot],
       robots: Map[String, Int]
   ): Seq[Robot] = {
     val nbrObsidian = robots.getOrElse("obsidian", 0)
     val nbrClay = robots.getOrElse("clay", 0)
     val nbrOre = robots.getOrElse("ore", 0)
-
-    val maxObsidian =
-      blueprints.map(_.costs.getOrElse("obsidian", 0)).maxOption.getOrElse(0)
-    val maxClay =
-      blueprints.map(_.costs.getOrElse("clay", 0)).maxOption.getOrElse(0)
-    val maxOre = blueprints
-      .map(_.costs.getOrElse("ore", 0))
-      .maxOption
-      .getOrElse(0)
 
     var result = affordableBlueprints
     if (nbrObsidian >= maxObsidian) {
@@ -244,22 +249,6 @@ object Day19 {
         }
         .toSeq
     )
-  }
-
-  private def hasMaxRobots(blueprints: Seq[Robot], robots: Map[String, Int]) = {
-    val nbrObsidian = robots.getOrElse("obsidian", 0)
-    val nbrClay = robots.getOrElse("clay", 0)
-    val nbrOre = robots.getOrElse("ore", 0)
-
-    val maxObsidian =
-      blueprints.map(_.costs.getOrElse("obsidian", 0)).maxOption.getOrElse(0)
-    val maxClay =
-      blueprints.map(_.costs.getOrElse("clay", 0)).maxOption.getOrElse(0)
-    val maxOre = blueprints
-      .map(_.costs.getOrElse("ore", 0))
-      .maxOption
-      .getOrElse(0)
-    nbrObsidian == maxObsidian && nbrClay == maxClay && nbrOre == maxOre
   }
 
 }
