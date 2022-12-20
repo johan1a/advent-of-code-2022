@@ -41,7 +41,6 @@ object Day20 {
     val a = find(zero, 1000)
     val b = find(a, 1000)
     val c = find(b, 1000)
-    println(s"a: ${a.n}, b: ${b.n}, c: ${c.n}")
 
     a.n + b.n + c.n
   }
@@ -68,8 +67,6 @@ object Day20 {
     first.prev = prev
     prev.next = first
 
-    println("initial")
-    println(nodesToString(first))
     0.until(10).foreach { _ =>
       var i = 0
       while (i < input.size) {
@@ -83,7 +80,6 @@ object Day20 {
     val a = find(zero, 1000)
     val b = find(a, 1000)
     val c = find(b, 1000)
-    println(s"a: ${a.n}, b: ${b.n}, c: ${c.n}")
 
     a.n + b.n + c.n
   }
