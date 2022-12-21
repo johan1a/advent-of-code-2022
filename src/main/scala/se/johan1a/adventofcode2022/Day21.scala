@@ -42,9 +42,7 @@ object Day21 {
     expr match {
       case VarExpr(id) => value
       case AddExpr(a, b) =>
-        val aTry = Try(eval(a))
-        val bTry = Try(eval(b))
-        (aTry, bTry) match {
+        (Try(eval(a)), Try(eval(b))) match {
           case (Success(n), _) => calculate(value - n, b)
           case (_, Success(n)) => calculate(value - n, a)
           case _               => ???
