@@ -25,13 +25,13 @@ object Day21 {
   def part1(input: Seq[String]): Long = {
     var instructions = input.map(parse).toMap
     val tree = buildTree(instructions, "root")
-    eval2(tree)
+    eval(tree)
   }
 
   def part2(input: Seq[String]): Long = {
     var instructions = input.map(parse2).toMap
     val tree = buildTree(instructions, "root").asInstanceOf[EqExpr]
-    (Try(eval2(tree.a)), Try(eval2(tree.b))) match {
+    (Try(eval(tree.a)), Try(eval(tree.b))) match {
       case (Success(a), _) => calculate(a, tree.b)
       case (_, Success(b)) => calculate(b, tree.a)
       case _               => ???
@@ -42,27 +42,27 @@ object Day21 {
     expr match {
       case VarExpr(id) => value
       case AddExpr(a, b) =>
-        val aTry = Try(eval2(a))
-        val bTry = Try(eval2(b))
+        val aTry = Try(eval(a))
+        val bTry = Try(eval(b))
         (aTry, bTry) match {
           case (Success(n), _) => calculate(value - n, b)
           case (_, Success(n)) => calculate(value - n, a)
           case _               => ???
         }
       case SubExpr(a, b) =>
-        (Try(eval2(a)), Try(eval2(b))) match {
+        (Try(eval(a)), Try(eval(b))) match {
           case (Success(n), _) => calculate(-(value - n), b)
           case (_, Success(n)) => calculate(value + n, a)
           case _               => ???
         }
       case MulExpr(a, b) =>
-        (Try(eval2(a)), Try(eval2(b))) match {
+        (Try(eval(a)), Try(eval(b))) match {
           case (Success(n), _) => calculate(value / n, b)
           case (_, Success(n)) => calculate(value / n, a)
           case _               => ???
         }
       case DivExpr(a, b) =>
-        (Try(eval2(a)), Try(eval2(b))) match {
+        (Try(eval(a)), Try(eval(b))) match {
           case (Success(n), _) => calculate(n / value, b)
           case (_, Success(n)) => calculate(value * n, a)
           case _               => ???
@@ -89,13 +89,13 @@ object Day21 {
     }
   }
 
-  private def eval2(expr: Expr): Long = {
+  private def eval(expr: Expr): Long = {
     expr match {
       case Number(value) => value
-      case AddExpr(a, b) => eval2(a) + eval2(b)
-      case SubExpr(a, b) => eval2(a) - eval2(b)
-      case MulExpr(a, b) => eval2(a) * eval2(b)
-      case DivExpr(a, b) => eval2(a) / eval2(b)
+      case AddExpr(a, b) => eval(a) + eval(b)
+      case SubExpr(a, b) => eval(a) - eval(b)
+      case MulExpr(a, b) => eval(a) * eval(b)
+      case DivExpr(a, b) => eval(a) / eval(b)
       case _             => ???
     }
   }
