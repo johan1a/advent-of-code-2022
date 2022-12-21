@@ -42,7 +42,6 @@ object Day20 {
     a.n + b.n + c.n
   }
 
-
   private def move(node: Node, steps: Long) = {
     if (steps > 0) {
       var i = 0

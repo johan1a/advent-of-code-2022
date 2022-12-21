@@ -23,39 +23,18 @@ object Day21 {
   case class DivExpr(a: Expr, b: Expr) extends Expr
 
   def part1(input: Seq[String]): Long = {
-    val instructions = input.map(parse).toMap
-    eval(instructions, "root")
-  }
-
-  private def eval(instructions: Map[String, Op], id: String): Long = {
-    instructions(id) match {
-      case Num(value) => value
-      case Add(a, b)  => eval(instructions, a) + eval(instructions, b)
-      case Sub(a, b)  => eval(instructions, a) - eval(instructions, b)
-      case Mul(a, b)  => eval(instructions, a) * eval(instructions, b)
-      case Div(a, b)  => eval(instructions, a) / eval(instructions, b)
-    }
-  }
-
-  private def parse(line: String): (String, Op) = {
-    line match {
-      case s"$id: $a + $b" => id -> Add(a, b)
-      case s"$id: $a - $b" => id -> Sub(a, b)
-      case s"$id: $a * $b" => id -> Mul(a, b)
-      case s"$id: $a / $b" => id -> Div(a, b)
-      case s"$id: $n"      => id -> Num(n.toLong)
-    }
+    var instructions = input.map(parse).toMap
+    val tree = buildTree(instructions, "root")
+    eval2(tree)
   }
 
   def part2(input: Seq[String]): Long = {
     var instructions = input.map(parse2).toMap
-    println(instructions)
     val tree = buildTree(instructions, "root").asInstanceOf[EqExpr]
-    println(tree.a)
-    println(tree.b)
     (Try(eval2(tree.a)), Try(eval2(tree.b))) match {
       case (Success(a), _) => calculate(a, tree.b)
       case (_, Success(b)) => calculate(b, tree.a)
+      case _               => ???
     }
   }
 
@@ -68,22 +47,27 @@ object Day21 {
         (aTry, bTry) match {
           case (Success(n), _) => calculate(value - n, b)
           case (_, Success(n)) => calculate(value - n, a)
+          case _               => ???
         }
       case SubExpr(a, b) =>
         (Try(eval2(a)), Try(eval2(b))) match {
           case (Success(n), _) => calculate(-(value - n), b)
           case (_, Success(n)) => calculate(value + n, a)
+          case _               => ???
         }
       case MulExpr(a, b) =>
         (Try(eval2(a)), Try(eval2(b))) match {
           case (Success(n), _) => calculate(value / n, b)
           case (_, Success(n)) => calculate(value / n, a)
+          case _               => ???
         }
       case DivExpr(a, b) =>
         (Try(eval2(a)), Try(eval2(b))) match {
           case (Success(n), _) => calculate(n / value, b)
           case (_, Success(n)) => calculate(value * n, a)
+          case _               => ???
         }
+      case _ => ???
     }
   }
 
@@ -112,6 +96,17 @@ object Day21 {
       case SubExpr(a, b) => eval2(a) - eval2(b)
       case MulExpr(a, b) => eval2(a) * eval2(b)
       case DivExpr(a, b) => eval2(a) / eval2(b)
+      case _             => ???
+    }
+  }
+
+  private def parse(line: String): (String, Op) = {
+    line match {
+      case s"$id: $a + $b" => id -> Add(a, b)
+      case s"$id: $a - $b" => id -> Sub(a, b)
+      case s"$id: $a * $b" => id -> Mul(a, b)
+      case s"$id: $a / $b" => id -> Div(a, b)
+      case s"$id: $n"      => id -> Num(n.toLong)
     }
   }
 
