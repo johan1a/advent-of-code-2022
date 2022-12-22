@@ -67,12 +67,8 @@ object Day22 {
       width: Int,
       startOffset: Int
   ): Int = {
-    // needs input: which sides come in what order and in what orientation
-    // also, how long is a side
-    // orientation: rotate x * 90 degrees, and add offset, + 2 sides x, + 2 sides y
-    // if pos > some y, turn and go to side x
     val (grid, path) = parse2(input, order, width)
-    println(grid)
+//    printGrid(grid, width)
 
     var dir = right
     val startPos = Vec2(startOffset * width, 0)
@@ -96,6 +92,15 @@ object Day22 {
     //rotate back 360 - rotation degrees
     //calculate score
     -1
+  }
+
+  private def printGrid(grid: mutable.Map[Vec2, Char], width: Int) = {
+    0.until(width * 5).map { y =>
+      0.until(width * 4).map { x =>
+        print(grid.getOrElse(Vec2(x, y), " "))
+      }
+      println()
+    }
   }
 
   private def parse2(input: Seq[String], sides: Seq[InputSide], width: Int) = {
@@ -143,21 +148,67 @@ object Day22 {
   // x1 -> max - y0
 
   // rotate clockwise
-  private def rotate(
+  def rotate(
       grid: mutable.Map[Vec2, Char],
       degrees: Int,
       width: Int
   ) = {
     var prevGrid = grid
+    println(s"rotating grid $degrees degrees")
     0.until(degrees / 90).foreach { _ =>
       val rotatedGrid = mutable.Map[Vec2, Char]()
-      prevGrid.foreach { case (pos, char) =>
-        rotatedGrid += (Vec2(width - pos.y, pos.x) -> char)
+      val minX: Long = prevGrid.keys.minBy(_.x).x
+      val minY: Long = prevGrid.keys.minBy(_.y).y
+      println((minX, minY))
+
+      val layers = width / 2
+      0.until(layers).map { l =>
+        (minX + l).until(minX + width - l).foreach { x =>
+          //top -> right
+          rotatedGrid(Vec2(minX + width - 1 - 2 * l, x)) = prevGrid(Vec2(x, minY + l))
+          //right -> bottom
+          //bottom -> left
+          //left -> top
+        }
+        (minY + l).until(minY + width - l).foreach { y =>
+        }
       }
+
+      prevGrid.foreach { case (pos, char) =>
+        val newX = minX + width - 1 - pos.y % width
+        val newY = minY + pos.x % width
+        println(s"old: $pos, new: $newX $newY")
+        rotatedGrid += (Vec2(
+          newX,
+          newY
+        ) -> char)
+      }
+      println(s"grid before rotation:")
+      printGrid(prevGrid, width)
+      println(prevGrid)
+      println(s"grid after rotation:")
+      printGrid(rotatedGrid, width)
+      println(rotatedGrid)
       prevGrid = rotatedGrid
     }
 
     prevGrid
+  }
+
+  def gridString(grid: mutable.Map[Vec2, Char]): String = {
+    val minX: Long = grid.keys.minBy(_.x).x
+    val minY: Long = grid.keys.minBy(_.y).y
+    val maxX: Long = grid.keys.maxBy(_.x).x
+    val maxY: Long = grid.keys.maxBy(_.y).y
+    println((minX,maxX,minY,maxY))
+    var str = ""
+    minY.to(maxY).map { y =>
+      minX.to(maxX).map { x =>
+        str += grid.getOrElse(Vec2(x, y), " ")
+      }
+      str += "\n"
+    }
+    str
   }
 
   private def move2(
@@ -190,7 +241,10 @@ object Day22 {
             nextPos.y >= width && nextPos.y < 2 * width && nextPos.x > startPos.x + 2 * width
           ) {
             // right -> bottom
-            nextPos = Vec2(startPos.x + width - 1, width - nextPos.y % width + 3 * width)
+            nextPos = Vec2(
+              startPos.x + width - 1,
+              width - nextPos.y % width + 3 * width
+            )
             nextDir = left
           } else if (
             nextPos.y >= 2 * width && nextPos.y < 3 * width && nextPos.x > startPos.x + width
@@ -199,9 +253,7 @@ object Day22 {
             nextPos =
               Vec2(startPos.x + width + nextPos.y - 2 * width, 2 * width - 1)
             nextDir = up
-          } else if (
-            nextPos.y > 3 * width && nextPos.x > startPos.x + width
-          ) {
+          } else if (nextPos.y > 3 * width && nextPos.x > startPos.x + width) {
             // bottom -> right?
             nextPos =
               Vec2(startPos.x + 2 * width - 1, 2 * width - nextPos.y % width)
@@ -219,7 +271,10 @@ object Day22 {
             nextDir = down
           } else if (nextPos.x >= startPos.x + width && nextPos.y > 2 * width) {
             // right -> back
-            nextPos = Vec2(startPos.x + width -1, startPos.y + width + nextPos.y % width)
+            nextPos = Vec2(
+              startPos.x + width - 1,
+              startPos.y + width + nextPos.y % width
+            )
             nextDir = left
           } else if (nextPos.x < startPos.x && nextPos.y > 2 * width) {
             // left -> back
@@ -231,9 +286,7 @@ object Day22 {
         // left
         case 2 =>
           nextPos = add(changedPos, Vec2(-1, 0))
-          if (
-            nextPos.y >= 0 && nextPos.y < width && nextPos.x < startPos.x
-          ) {
+          if (nextPos.y >= 0 && nextPos.y < width && nextPos.x < startPos.x) {
             //front -> left
             nextPos = Vec2(startPos.x - 2 * width - 1 + nextPos.y, width)
             nextDir = down
@@ -249,11 +302,10 @@ object Day22 {
             // back -> left
             nextPos = Vec2(startPos.x - (nextPos.y - 2 * width), 2 * width - 1)
             nextDir = up
-          } else if (
-            nextPos.y > 3 * width && nextPos.x < startPos.x
-          ) {
+          } else if (nextPos.y > 3 * width && nextPos.x < startPos.x) {
             // bottom -> left
-            nextPos = Vec2(startPos.x - width - 1, 2 * width - nextPos.y % width)
+            nextPos =
+              Vec2(startPos.x - width - 1, 2 * width - nextPos.y % width)
             nextDir = right
           }
 
@@ -261,9 +313,11 @@ object Day22 {
         case 3 =>
           nextPos = add(changedPos, Vec2(0, -1))
 
-          if (nextPos.x >= startPos.x && nextPos.x < startPos.x + width && nextPos.y < 0) {
+          if (
+            nextPos.x >= startPos.x && nextPos.x < startPos.x + width && nextPos.y < 0
+          ) {
             // front -> bottom
-            nextPos = Vec2(nextPos.x, 4*width-1)
+            nextPos = Vec2(nextPos.x, 4 * width - 1)
             nextDir = up
           } else if (nextPos.x >= startPos.x + width && nextPos.y > width) {
             // right -> front
@@ -271,7 +325,8 @@ object Day22 {
             nextDir = left
           } else if (nextPos.x < startPos.x && nextPos.y > width) {
             // left -> front
-            nextPos = Vec2(startPos.x, width - (nextPos.x - startPos.x).abs%width)
+            nextPos =
+              Vec2(startPos.x, width - (nextPos.x - startPos.x).abs % width)
             nextDir = right
           } else {
             ???
