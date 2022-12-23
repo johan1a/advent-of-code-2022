@@ -99,7 +99,14 @@ object Day22 {
     }
 
     if(output){
+      log(s"\npos: $pos, dir: ${dirString(dir)}")
       printAround(grid, pos, dir)
+      if (manual) {
+        val input = readLine()
+        if (input == "exit") {
+          throw new Exception
+        }
+      }
     }
 
     log(s"last pos: ${pos}, dir: ${dirString(dir)}")
@@ -107,8 +114,9 @@ object Day22 {
   }
 
   def printAround(grid: mutable.Map[Vec2, Char], pos: Vec2, dir: Int) = {
-    (-5).until(5).map { ydiff =>
-      (-5).until(5).map { xdiff =>
+    val d = 7
+    (-d).until(d).map { ydiff =>
+      (-d).until(d).map { xdiff =>
         if (ydiff ==0 && xdiff == 0) {
           dir match {
             case 0 => print('>')
@@ -207,7 +215,7 @@ object Day22 {
             nextPos.x >= width && nextPos.x < 2 * width && nextPos.y >= 3 * width
           ) {
             log("B -> U")
-            nextPos = Vec2(startPos.x - 1, 3 * width + changedPos.x % width)
+            nextPos = Vec2(width - 1, 3 * width + changedPos.x % width)
             nextDir = left
           } else if (nextPos.x >= 2 * width && nextPos.y >= width) {
             log("R -> T")
