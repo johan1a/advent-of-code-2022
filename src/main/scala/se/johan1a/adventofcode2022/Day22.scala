@@ -6,6 +6,13 @@ import scala.io.StdIn.readLine
 
 object Day22 {
 
+  var output = false
+  def log(str: Any) = {
+    if (output) {
+      println(str.toString())
+    }
+  }
+
   trait Action
   case class Move(n: Int) extends Action
   case object TurnLeft extends Action
@@ -52,23 +59,29 @@ object Day22 {
   def part2(
       input: Seq[String],
       startPos: Vec2 = Vec2(50, 0),
-      testPath: String = ""
+      testPath: String = "",
+      doOutput: Boolean = false,
+      isManual: Boolean = false
   ): (Vec2, Int) = {
+    var manual = isManual
+    output = doOutput
     val width = 50
     val (grid, parsedPath) = parse2(input, width)
 
-    val path = if(testPath.nonEmpty) { parsePath(testPath) } else { parsedPath }
+    val path = if (testPath.nonEmpty) { parsePath(testPath) }
+    else { parsedPath }
 
     var dir = right
     var pos = startPos
 
-    var manual = false
-
     path.foreach { action =>
-      println(s"\npos: $pos, dir: ${dirString(dir)}")
-      println(s"next action: ${action}")
+      if(output){
+        printAround(grid, pos, dir)
+      }
+      log(s"\npos: $pos, dir: ${dirString(dir)}")
+      log(s"next action: ${action}")
 
-      if(manual) {
+      if (manual) {
         val input = readLine()
         if (input == "exit") {
           throw new Exception
@@ -85,9 +98,32 @@ object Day22 {
       }
     }
 
-    println(s"last pos: ${pos}, dir: ${dirString(dir)}")
+    if(output){
+      printAround(grid, pos, dir)
+    }
+
+    log(s"last pos: ${pos}, dir: ${dirString(dir)}")
     (pos, dir)
   }
+
+  def printAround(grid: mutable.Map[Vec2, Char], pos: Vec2, dir: Int) = {
+    (-5).until(5).map { ydiff =>
+      (-5).until(5).map { xdiff =>
+        if (ydiff ==0 && xdiff == 0) {
+          dir match {
+            case 0 => print('>')
+            case 1 => print('v')
+            case 2 => print('<')
+            case 3 => print('^')
+          }
+        } else {
+          print(grid.getOrElse(add(pos, Vec2(xdiff, ydiff)), ' '))
+        }
+      }
+      println()
+    }
+  }
+
 
   //.FR
   //.T
@@ -130,27 +166,27 @@ object Day22 {
         // right
         case 0 =>
           nextPos = add(changedPos, Vec2(1, 0))
-          //println(s"nextPos before: $nextPos")
+          //log(s"nextPos before: $nextPos")
           if (nextPos.y < width && nextPos.x >= 3 * width) {
-            println("R -> B")
-            nextPos = add(changedPos, Vec2(-width, 2 * width))
+            log("R -> B")
+            nextPos = Vec2(changedPos.x - width, 3 * width - changedPos.y % width)
             nextDir = left
           } else if (
             nextPos.y >= width && nextPos.y < 2 * width && nextPos.x >= 2 * width
           ) {
             nextPos = Vec2(2 * width + changedPos.y % width, width - 1)
-            println("T -> R, nextPos: $nextPos")
+            log("T -> R, nextPos: $nextPos")
             nextDir = up
           } else if (
             nextPos.y >= 2 * width && nextPos.y < 3 * width && nextPos.x >= 2 * width
           ) {
-            println("B -> R")
+            log("B -> R")
             nextPos = Vec2(3 * width - 1, width - changedPos.y % width)
             nextDir = left
           } else if (
             nextPos.y >= 3 * width && nextPos.y < 4 * width && nextPos.x >= width
           ) {
-            println("U -> B")
+            log("U -> B")
             nextPos = Vec2(width + nextPos.y % width, 3 * width - 1)
             nextDir = up
           }
@@ -162,19 +198,19 @@ object Day22 {
         //U
         case 1 =>
           nextPos = add(changedPos, Vec2(0, 1))
-          //println(s"nextPos: $nextPos")
+          //log(s"nextPos: $nextPos")
           if (nextPos.x < width && nextPos.y >= 4 * width) {
             nextPos = Vec2(changedPos.x + 2 * width, 0)
-            println(s"U -> R, nextPos: $nextPos")
+            log(s"U -> R, nextPos: $nextPos")
             nextDir = down
           } else if (
             nextPos.x >= width && nextPos.x < 2 * width && nextPos.y >= 3 * width
           ) {
-            println("B -> U")
+            log("B -> U")
             nextPos = Vec2(startPos.x - 1, 3 * width + changedPos.x % width)
             nextDir = left
           } else if (nextPos.x >= 2 * width && nextPos.y >= width) {
-            println("R -> T")
+            log("R -> T")
             nextPos = Vec2(
               2 * width - 1,
               width + changedPos.x % width
@@ -191,24 +227,24 @@ object Day22 {
           nextPos = add(changedPos, Vec2(-1, 0))
           if (nextPos.y < width && nextPos.x < width) {
             nextPos = Vec2(0, 2 * width + width - (changedPos.y % width))
-            println(s"F -> L, nextPos: $nextPos")
+            log(s"F -> L, nextPos: $nextPos")
             nextDir = right
           } else if (
             nextPos.y >= width && nextPos.y < 2 * width && nextPos.x < width
           ) {
-            println("T -> L")
+            log("T -> L")
             nextPos = Vec2(changedPos.y % width, 2 * width)
             nextDir = down
           } else if (
             nextPos.y >= 2 * width && nextPos.y < 3 * width && nextPos.x < 0
           ) {
-            println("L -> F")
+            log("L -> F")
             nextPos = Vec2(width, width - changedPos.y % width)
             nextDir = right
           } else if (
             nextPos.y >= 3 * width && nextPos.y < 4 * width && nextPos.x < 0
           ) {
-            println("U -> F")
+            log("U -> F")
             nextPos = Vec2(nextPos.y % width + width, 0)
             nextDir = down
           }
@@ -219,24 +255,22 @@ object Day22 {
         //U
         case 3 =>
           nextPos = add(changedPos, Vec2(0, -1))
-          if (
-            nextPos.x < width && nextPos.y < 2 * width
-          ) {
+          if (nextPos.x < width && nextPos.y < 2 * width) {
             nextPos = Vec2(width, width + changedPos.x % width)
-            println(s"L -> T, nextPos: $nextPos")
+            log(s"L -> T, nextPos: $nextPos")
             nextDir = right
           } else if (
             nextPos.x >= width && nextPos.x < 2 * width && nextPos.y < 0
           ) {
-            println("F -> U")
+            log("F -> U")
             nextPos = Vec2(0, 3 * width + changedPos.x % width)
             nextDir = right
           } else if (
             nextPos.x >= 2 * width && nextPos.x < 3 * width && nextPos.y < 0
           ) {
-            println(s"nextPos before: $nextPos")
+            log(s"nextPos before: $nextPos")
             nextPos = Vec2(changedPos.x % width, 4 * width - 1)
-            println(s"R -> U, nextPos: $nextPos")
+            log(s"R -> U, nextPos: $nextPos")
             nextDir = up
           }
       }
@@ -244,13 +278,13 @@ object Day22 {
         changedPos = nextPos
         changedDir = nextDir
       } else {
-        //println(s"hit a wall at ${nextPos}")
+        //log(s"hit a wall at ${nextPos}")
         hitWallPos = Some(nextPos)
       }
     }
 
     if (hitWallPos.isDefined) {
-      println(s"hit a wall at ${hitWallPos.get}")
+      log(s"hit a wall at ${hitWallPos.get}")
     }
 
     (changedPos, changedDir)
@@ -296,7 +330,7 @@ object Day22 {
     val minY: Long = grid.keys.minBy(_.y).y
     val maxX: Long = grid.keys.maxBy(_.x).x
     val maxY: Long = grid.keys.maxBy(_.y).y
-    println((minX, maxX, minY, maxY))
+    log((minX, maxX, minY, maxY))
     var str = ""
     minY.to(maxY).map { y =>
       minX.to(maxX).map { x =>
@@ -325,7 +359,7 @@ object Day22 {
         case 0 =>
           nextPos = add(changedPos, Vec2(1, 0))
           if (nextPos.x > xBounds(startY)._2) {
-            //println(s"nextpos: $nextPos, xBounds(startY)._2: ${xBounds(startY)._2}")
+            //log(s"nextpos: $nextPos, xBounds(startY)._2: ${xBounds(startY)._2}")
             nextPos = Vec2(xBounds(startY)._1, nextPos.y)
           }
         case 1 =>
@@ -347,7 +381,7 @@ object Day22 {
       if (grid(nextPos) != '#') {
         changedPos = nextPos
       } else {
-        //println(s"hit a wall at ${nextPos}")
+        //log(s"hit a wall at ${nextPos}")
       }
     }
 

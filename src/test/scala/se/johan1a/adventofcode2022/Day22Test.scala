@@ -165,29 +165,115 @@ class Day22Test extends munit.FunSuite {
 
   // test from R
   test("Part 2 test: R -> F -> R") {
-    // TODO
+    assertEquals(
+      Day22.part2(
+        getInput("day22/input.txt"),
+        startPos = Vec2(100, 0),
+        testPath = "RR1RR1"
+      ),
+      (Vec2(100, 0), 0)
+    )
   }
 
   test("Part 2 test: R -> B -> R") {
-    // TODO
+    assertEquals(
+      Day22.part2(
+        getInput("day22/input.txt"),
+        startPos = Vec2(149, 1),
+        testPath = "1RR1"
+      ),
+      (Vec2(149, 1), 2)
+    )
+  }
+
+  test("Part 2 test: R -> B -> R (higher y)") {
+    assertEquals(
+      Day22.part2(
+        getInput("day22/input.txt"),
+        startPos = Vec2(149, 49),
+        testPath = "1RR1"
+      ),
+      (Vec2(149, 49), 2)
+    )
   }
 
   test("Part 2 test: R -> U -> R") {
-    // TODO
+    assertEquals(
+      Day22.part2(
+        getInput("day22/input.txt"),
+        startPos = Vec2(100, 0),
+        testPath = "L1RR1"
+      ),
+      (Vec2(100, 0), 1)
+    )
+  }
+
+  test("Part 2 test: R -> U -> R (higher x)") {
+    assertEquals(
+      Day22.part2(
+        getInput("day22/input.txt"),
+        startPos = Vec2(148, 0),
+        testPath = "L1RR1"
+      ),
+      (Vec2(148, 0), 1)
+    )
   }
 
   test("Part 2 test: R -> T -> R") {
-    // TODO
+    assertEquals(
+      Day22.part2(
+        getInput("day22/input.txt"),
+        startPos = Vec2(100, 49),
+        testPath = "R1RR1"
+      ),
+      (Vec2(100, 49), 3)
+    )
   }
 
   // test from L
   test("Part 2 test: L -> T -> L") {
+    assertEquals(
+      Day22.part2(
+        getInput("day22/input.txt"),
+        startPos = Vec2(49, 100),
+        testPath = "L1RR1"
+      ),
+      (Vec2(49, 100), 1)
+    )
   }
 
   test("Part 2 test: L -> F -> L") {
+    assertEquals(
+      Day22.part2(
+        getInput("day22/input.txt"),
+        startPos = Vec2(0, 100),
+        testPath = "LL1RR1"
+      ),
+      (Vec2(0, 100), 1)
+    )
   }
-  test("Part 2 test: L -> B -> L") { }
-  test("Part 2 test: L -> U -> L") { }
+
+  test("Part 2 test: L -> B -> L") {
+    assertEquals(
+      Day22.part2(
+        getInput("day22/input.txt"),
+        startPos = Vec2(49, 149),
+        testPath = "1RR1"
+      ),
+      (Vec2(49, 149), 2)
+    )
+  }
+
+  test("Part 2 test: L -> U -> L") {
+    assertEquals(
+      Day22.part2(
+        getInput("day22/input.txt"),
+        startPos = Vec2(49, 149),
+        testPath = "R1RR1"
+      ),
+      (Vec2(49, 149), 3)
+    )
+  }
 
   // test from U
   test("Part 2 test: U -> L -> U") {
@@ -212,15 +298,68 @@ class Day22Test extends munit.FunSuite {
     )
   }
 
-  test("Part 2 test: U -> B -> U") { }
+  test("Part 2 test: U -> B -> U") {
+    assertEquals(
+      Day22.part2(
+        getInput("day22/input.txt"),
+        startPos = Vec2(49, 199),
+        testPath = "1RR1"
+      ),
+      (Vec2(49, 199), 2)
+    )
+  }
 
-  test("Part 2 test: U -> R -> U") { }
+  test("Part 2 test: U -> R -> U") {
+    assertEquals(
+      Day22.part2(
+        getInput("day22/input.txt"),
+        startPos = Vec2(47, 199),
+        testPath = "R1RR1"
+      ),
+      (Vec2(47, 199), 3)
+    )
+  }
 
-  // 50273 too low
-  // 64335 too high
-  // 116185 too high
+  // corners
+  test("Corner T B L T") {
+  }
+
+  test("Corner T L F T") {
+  }
+
+  test("Corner B T R B") {
+  }
+
+  test("Corner B T L B") {
+  }
+
+  test("Corner U F R U") {
+  }
+
+  test("Corner U B R U") {
+    assertEquals(
+      Day22.part2(
+        getInput("day22/input.txt"),
+        startPos = Vec2(47, 198),
+        testPath = "4R4R4",//LL1L1L1",
+        doOutput=true,
+        isManual=true
+      ),
+      (Vec2(47,198), 3)
+    )
+  }
+
+  test("Corner U B L U") {
+  }
+
+  test("Corner U L F U") {
+  }
+
+//   50273 too low
+//   64335 too high
+//   116185 too high
   // test("Part 2") {
-  //   val (pos, dir) = Day22.part2(getInput("day22/input.txt"))
+  //   val (pos, dir) = Day22.part2(getInput("day22/input.txt"), doOutput=true)
   //   val result = 1000 * (pos.y.toInt + 1) + 4 * (pos.x.toInt + 1) + dir
   //   assertEquals(result, 1)
   // }
