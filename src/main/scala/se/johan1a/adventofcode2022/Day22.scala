@@ -2,6 +2,7 @@ package se.johan1a.adventofcode2022
 
 import Utils._
 import scala.collection.mutable
+import scala.io.StdIn.readLine
 
 object Day22 {
 
@@ -19,16 +20,14 @@ object Day22 {
     val (xBounds, yBounds, grid, path) = parse(input)
     var dir = right
     var pos = Vec2(xBounds(0)._1, 0)
-    println(s"start pos: $pos, dir: $dir")
     path.foreach { action =>
-      // println(s"action: $action")
       action match {
         case Move(n) =>
           pos = move(grid, xBounds, yBounds, pos, dir, n)
         case turnAction =>
           dir = turn(dir, turnAction)
       }
-      // println(s"pos: $pos, dir: $dir")
+
     }
 
     1000 * (pos.y.toInt + 1) + 4 * (pos.x.toInt + 1) + dir
@@ -60,15 +59,19 @@ object Day22 {
   def part2(
       input: Seq[String]
   ): Int = {
-    val (grid, path) = parse2(input, order, width)
+    val width = 50
+    val (grid, path) = parse2(input, width)
 
     var dir = right
     val startPos = Vec2(50, 0)
     var pos = startPos
-    val width = 50
-    println(s"start pos: $pos, dir: $dir")
     path.foreach { action =>
-      // println(s"action: $action")
+      println(s"pos: $pos, dir: ${dirString(dir)}")
+      println(s"next action: ${action}")
+      val input = readLine()
+      if (input == "exit") {
+        throw new Exception
+      }
       action match {
         case Move(n) =>
           val (newPos, newDir) = move2(grid, width, startPos, pos, dir, n)
@@ -112,8 +115,10 @@ object Day22 {
     var nextPos = pos
     var nextDir = dir
 
+    var hitWallPos:Option[Vec2] = None
+
     0.until(n).foreach { _ =>
-      dir match {
+      nextDir match {
         //.FR
         //.T
         //LB
@@ -121,48 +126,59 @@ object Day22 {
         // right
         case 0 =>
           nextPos = add(changedPos, Vec2(1, 0))
+          //println(s"nextPos: $nextPos")
           if (nextPos.y < width && nextPos.x > 3 * width) {
-            // R -> B
-            nextPos = add(changedPos, Vec2(-width, 2*width))
+            println("R -> B")
+            nextPos = add(changedPos, Vec2(-width, 2 * width))
             nextDir = left
-          } else if(nextPos.y < 2 * width && nextPos.x > 2 * width) {
-            // T -> R
-            nextPos = Vec2(changedPos.y%width, width -1)
+          } else if (
+            nextPos.y > width && nextPos.y < 2 * width && nextPos.x > 2 * width
+          ) {
+            println("T -> R")
+            nextPos = Vec2(changedPos.y % width, width - 1)
             nextDir = up
-          } else if(nextPos.y < 3 * width && nextPos.x > 2 * width) {
-            // B -> R
-            nextPos = Vec2(3*width-1, width-changedPos.y%width)
+          } else if (
+            nextPos.y > 2 * width && nextPos.y < 3 * width && nextPos.x > 2 * width
+          ) {
+            println("B -> R")
+            nextPos = Vec2(3 * width - 1, width - changedPos.y % width)
             nextDir = left
-          } else if(nextPos.y < 4 * width && nextPos.x > width) {
-            // U -> B
-            nextPos = Vec2(3*width-1, 3*width-1)
+          } else if (
+            nextPos.y > 3 * width && nextPos.y < 4 * width && nextPos.x > width
+          ) {
+            println("U -> B")
+            nextPos = Vec2(3 * width - 1, 3 * width - 1)
             nextDir = up
-          } else {
-            ???
           }
 
-          // down
+        // down
         //.FR
         //.T
         //LB
         //U
         case 1 =>
           nextPos = add(changedPos, Vec2(0, 1))
+          //println(s"nextPos: $nextPos")
           if (nextPos.x < width && nextPos.y > 4 * width) {
-            // U -> R
+            println("U -> R")
             nextPos = Vec2(changedPos.x + 2 * width, 0)
             nextDir = down
-          } else if (nextPos.x < 2 * width && nextPos.y > 3 * width) {
-            // B -> U
-            nextPos = Vec2(startPos.x-1, 3*width+changedPos.x%width)
+          } else if (nextPos.x >= width && nextPos.x < 2 * width && nextPos.y > 3 * width) {
+            println("B -> U")
+            nextPos = Vec2(startPos.x - 1, 3 * width + changedPos.x % width)
             nextDir = left
-          } else if (nextPos.x < 3 * width && nextPos.y > width) {
-            // R -> T
-            nextPos = Vec2(2*width-1, width+changedPos.x%width)
+          } else if (
+            nextPos.x >= 2 * width && nextPos.y > width
+          ) {
+            println("R -> T")
+            nextPos = Vec2(
+              2 * width - 1,
+              width + changedPos.x % width
+            )
             nextDir = left
-          } else { ??? }
+          }
 
-          //left
+        //left
         //.FR
         //.T
         //LB
@@ -170,25 +186,23 @@ object Day22 {
         case 2 =>
           nextPos = add(changedPos, Vec2(-1, 0))
           if (nextPos.y < width && nextPos.x < width) {
-            // F -> L
-            nextPos = Vec2(0, 2*width + width-(changedPos.y%width))
+            nextPos = Vec2(0, 2 * width + width - (changedPos.y % width))
+            println(s"F -> L, nextPos: $nextPos")
             nextDir = right
-          } else if(nextPos.y < 2 * width && nextPos.x < width) {
-            // T -> L
-            nextPos = Vec2(changedPos.y%width, 2*width)
+          } else if (nextPos.y < 2 * width && nextPos.x < width) {
+            println("T -> L")
+            nextPos = Vec2(changedPos.y % width, 2 * width)
             nextDir = down
-          } else if(nextPos.y < 3 * width && nextPos.x < 0) {
-            // L -> F
-            nextPos = Vec2(width, width-changedPos.y%width)
+          } else if (nextPos.y < 3 * width && nextPos.x < 0) {
+            println("L -> F")
+            nextPos = Vec2(width, width - changedPos.y % width)
             nextDir = right
-          } else if(nextPos.y < 4 * width && nextPos.x < 0) {
-            // U -> F
-            nextPos = ???
+          } else if (nextPos.y < 4 * width && nextPos.x < 0) {
+            println("U -> F")
+            nextPos = Vec2(nextPos.y%width + width,0)
             nextDir = down
-          } else {
-            ???
           }
-          // up
+        // up
         //.FR
         //.T
         //LB
@@ -196,30 +210,34 @@ object Day22 {
         case 3 =>
           nextPos = add(changedPos, Vec2(0, -1))
           if (nextPos.x < width && nextPos.y < 3 * width) {
-            // L -> T
-            nextPos = Vec2(width, width+changedPos.x + width)
+            println("L -> T")
+            nextPos = Vec2(width, width + changedPos.x + width)
             nextDir = right
           } else if (nextPos.x < 2 * width && nextPos.y < 0) {
-            // F -> U
-            nextPos = Vec2(0, 3*width+changedPos.x%width)
+            println("F -> U")
+            nextPos = Vec2(0, 3 * width + changedPos.x % width)
             nextDir = right
           } else if (nextPos.x < 3 * width && nextPos.y < 0) {
-            // R -> U
-            nextPos = Vec2(width-1,changedPos.x%width)
+            println("R -> U")
+            nextPos = Vec2(width - 1, changedPos.x % width)
             nextDir = up
-          } else { ??? }
+          }
       }
       if (grid(nextPos) != '#') {
         changedPos = nextPos
         changedDir = nextDir
       } else {
         //println(s"hit a wall at ${nextPos}")
+        hitWallPos = Some(nextPos)
       }
+    }
+
+    if (hitWallPos.isDefined) {
+      println(s"hit a wall at ${hitWallPos.get}")
     }
 
     (changedPos, changedDir)
   }
-
 
   private def printGrid(grid: mutable.Map[Vec2, Char], width: Int) = {
     0.until(width * 5).map { y =>
@@ -230,7 +248,7 @@ object Day22 {
     }
   }
 
-  private def parse2(input: Seq[String]) = {
+  private def parse2(input: Seq[String], width: Int) = {
     val ss = split(input)
     val (lines, rawPath) = (ss.head, ss.last.head)
 
@@ -240,9 +258,9 @@ object Day22 {
     while (y < lines.size) {
       if (x == lines(y).size) {
         x = 0
-        y += width
+        y = y + width
       } else if (lines(y).charAt(x) == ' ') {
-        x += width
+        x = x + width
       } else {
         y.until(y + width).map { i =>
           x.until(x + width).map { j =>
@@ -250,7 +268,7 @@ object Day22 {
             grid(pos) = lines(i).charAt(j)
           }
         }
-        x += width
+        x = x + width
       }
     }
     (grid, parsePath(rawPath))
@@ -261,7 +279,7 @@ object Day22 {
     val minY: Long = grid.keys.minBy(_.y).y
     val maxX: Long = grid.keys.maxBy(_.x).x
     val maxY: Long = grid.keys.maxBy(_.y).y
-    println((minX,maxX,minY,maxY))
+    println((minX, maxX, minY, maxY))
     var str = ""
     minY.to(maxY).map { y =>
       minX.to(maxX).map { x =>
@@ -389,5 +407,14 @@ object Day22 {
       }
     }
     actions
+  }
+
+  private def dirString(dir: Int) = {
+    dir match {
+      case 0 => "right"
+      case 1 => "down"
+      case 2 => "left"
+      case 3 => "up"
+    }
   }
 }
