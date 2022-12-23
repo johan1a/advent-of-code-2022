@@ -49,29 +49,32 @@ object Day22 {
       rotationDegrees: Int
   )
 
-  // input
-  //
-  // canonicatl
-  // ..F
-  // .LTR
-  // ..B.
-  // ..U
   def part2(
-      input: Seq[String]
-  ): Int = {
+      input: Seq[String],
+      startPos: Vec2 = Vec2(50, 0),
+      testPath: String = ""
+  ): (Vec2, Int) = {
     val width = 50
-    val (grid, path) = parse2(input, width)
+    val (grid, parsedPath) = parse2(input, width)
+
+    val path = if(testPath.nonEmpty) { parsePath(testPath) } else { parsedPath }
 
     var dir = right
-    val startPos = Vec2(50, 0)
     var pos = startPos
+
+    var manual = false
+
     path.foreach { action =>
-      println(s"pos: $pos, dir: ${dirString(dir)}")
+      println(s"\npos: $pos, dir: ${dirString(dir)}")
       println(s"next action: ${action}")
-      val input = readLine()
-      if (input == "exit") {
-        throw new Exception
+
+      if(manual) {
+        val input = readLine()
+        if (input == "exit") {
+          throw new Exception
+        }
       }
+
       action match {
         case Move(n) =>
           val (newPos, newDir) = move2(grid, width, startPos, pos, dir, n)
@@ -82,7 +85,8 @@ object Day22 {
       }
     }
 
-    1000 * (pos.y.toInt + 1) + 4 * (pos.x.toInt + 1) + dir
+    println(s"last pos: ${pos}, dir: ${dirString(dir)}")
+    (pos, dir)
   }
 
   //.FR
@@ -115,7 +119,7 @@ object Day22 {
     var nextPos = pos
     var nextDir = dir
 
-    var hitWallPos:Option[Vec2] = None
+    var hitWallPos: Option[Vec2] = None
 
     0.until(n).foreach { _ =>
       nextDir match {
@@ -126,28 +130,28 @@ object Day22 {
         // right
         case 0 =>
           nextPos = add(changedPos, Vec2(1, 0))
-          //println(s"nextPos: $nextPos")
-          if (nextPos.y < width && nextPos.x > 3 * width) {
+          //println(s"nextPos before: $nextPos")
+          if (nextPos.y < width && nextPos.x >= 3 * width) {
             println("R -> B")
             nextPos = add(changedPos, Vec2(-width, 2 * width))
             nextDir = left
           } else if (
-            nextPos.y > width && nextPos.y < 2 * width && nextPos.x > 2 * width
+            nextPos.y >= width && nextPos.y < 2 * width && nextPos.x >= 2 * width
           ) {
-            println("T -> R")
-            nextPos = Vec2(changedPos.y % width, width - 1)
+            nextPos = Vec2(2 * width + changedPos.y % width, width - 1)
+            println("T -> R, nextPos: $nextPos")
             nextDir = up
           } else if (
-            nextPos.y > 2 * width && nextPos.y < 3 * width && nextPos.x > 2 * width
+            nextPos.y >= 2 * width && nextPos.y < 3 * width && nextPos.x >= 2 * width
           ) {
             println("B -> R")
             nextPos = Vec2(3 * width - 1, width - changedPos.y % width)
             nextDir = left
           } else if (
-            nextPos.y > 3 * width && nextPos.y < 4 * width && nextPos.x > width
+            nextPos.y >= 3 * width && nextPos.y < 4 * width && nextPos.x >= width
           ) {
             println("U -> B")
-            nextPos = Vec2(3 * width - 1, 3 * width - 1)
+            nextPos = Vec2(width + nextPos.y % width, 3 * width - 1)
             nextDir = up
           }
 
@@ -159,17 +163,17 @@ object Day22 {
         case 1 =>
           nextPos = add(changedPos, Vec2(0, 1))
           //println(s"nextPos: $nextPos")
-          if (nextPos.x < width && nextPos.y > 4 * width) {
-            println("U -> R")
+          if (nextPos.x < width && nextPos.y >= 4 * width) {
             nextPos = Vec2(changedPos.x + 2 * width, 0)
+            println(s"U -> R, nextPos: $nextPos")
             nextDir = down
-          } else if (nextPos.x >= width && nextPos.x < 2 * width && nextPos.y > 3 * width) {
+          } else if (
+            nextPos.x >= width && nextPos.x < 2 * width && nextPos.y >= 3 * width
+          ) {
             println("B -> U")
             nextPos = Vec2(startPos.x - 1, 3 * width + changedPos.x % width)
             nextDir = left
-          } else if (
-            nextPos.x >= 2 * width && nextPos.y > width
-          ) {
+          } else if (nextPos.x >= 2 * width && nextPos.y >= width) {
             println("R -> T")
             nextPos = Vec2(
               2 * width - 1,
@@ -189,17 +193,23 @@ object Day22 {
             nextPos = Vec2(0, 2 * width + width - (changedPos.y % width))
             println(s"F -> L, nextPos: $nextPos")
             nextDir = right
-          } else if (nextPos.y < 2 * width && nextPos.x < width) {
+          } else if (
+            nextPos.y >= width && nextPos.y < 2 * width && nextPos.x < width
+          ) {
             println("T -> L")
             nextPos = Vec2(changedPos.y % width, 2 * width)
             nextDir = down
-          } else if (nextPos.y < 3 * width && nextPos.x < 0) {
+          } else if (
+            nextPos.y >= 2 * width && nextPos.y < 3 * width && nextPos.x < 0
+          ) {
             println("L -> F")
             nextPos = Vec2(width, width - changedPos.y % width)
             nextDir = right
-          } else if (nextPos.y < 4 * width && nextPos.x < 0) {
+          } else if (
+            nextPos.y >= 3 * width && nextPos.y < 4 * width && nextPos.x < 0
+          ) {
             println("U -> F")
-            nextPos = Vec2(nextPos.y%width + width,0)
+            nextPos = Vec2(nextPos.y % width + width, 0)
             nextDir = down
           }
         // up
@@ -209,17 +219,24 @@ object Day22 {
         //U
         case 3 =>
           nextPos = add(changedPos, Vec2(0, -1))
-          if (nextPos.x < width && nextPos.y < 3 * width) {
-            println("L -> T")
-            nextPos = Vec2(width, width + changedPos.x + width)
+          if (
+            nextPos.x < width && nextPos.y < 2 * width
+          ) {
+            nextPos = Vec2(width, width + changedPos.x % width)
+            println(s"L -> T, nextPos: $nextPos")
             nextDir = right
-          } else if (nextPos.x < 2 * width && nextPos.y < 0) {
+          } else if (
+            nextPos.x >= width && nextPos.x < 2 * width && nextPos.y < 0
+          ) {
             println("F -> U")
             nextPos = Vec2(0, 3 * width + changedPos.x % width)
             nextDir = right
-          } else if (nextPos.x < 3 * width && nextPos.y < 0) {
-            println("R -> U")
-            nextPos = Vec2(width - 1, changedPos.x % width)
+          } else if (
+            nextPos.x >= 2 * width && nextPos.x < 3 * width && nextPos.y < 0
+          ) {
+            println(s"nextPos before: $nextPos")
+            nextPos = Vec2(changedPos.x % width, 4 * width - 1)
+            println(s"R -> U, nextPos: $nextPos")
             nextDir = up
           }
       }
