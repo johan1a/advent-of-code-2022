@@ -51,10 +51,6 @@ object Day22 {
   )
 
   // input
-  // .FR
-  // .T
-  // LB
-  // U
   //
   // canonicatl
   // ..F
@@ -62,17 +58,14 @@ object Day22 {
   // ..B.
   // ..U
   def part2(
-      input: Seq[String],
-      order: Seq[InputSide],
-      width: Int,
-      startOffset: Int
+      input: Seq[String]
   ): Int = {
     val (grid, path) = parse2(input, order, width)
-//    printGrid(grid, width)
 
     var dir = right
-    val startPos = Vec2(startOffset * width, 0)
+    val startPos = Vec2(50, 0)
     var pos = startPos
+    val width = 50
     println(s"start pos: $pos, dir: $dir")
     path.foreach { action =>
       // println(s"action: $action")
@@ -84,133 +77,26 @@ object Day22 {
         case turnAction =>
           dir = turn(dir, turnAction)
       }
-      // println(s"pos: $pos, dir: $dir")
     }
 
-    //if we are in a flipped side, calculate back to original coord system
-    //find current side type from coords
-    //rotate back 360 - rotation degrees
-    //calculate score
-    -1
+    1000 * (pos.y.toInt + 1) + 4 * (pos.x.toInt + 1) + dir
   }
 
-  private def printGrid(grid: mutable.Map[Vec2, Char], width: Int) = {
-    0.until(width * 5).map { y =>
-      0.until(width * 4).map { x =>
-        print(grid.getOrElse(Vec2(x, y), " "))
-      }
-      println()
-    }
-  }
-
-  private def parse2(input: Seq[String], sides: Seq[InputSide], width: Int) = {
-    val ss = split(input)
-    val (lines, rawPath) = (ss.head, ss.last.head)
-
-    var y = 0
-    var x = 0
-    var sidesToParse = sides
-    val grid = mutable.Map[Vec2, Char]()
-    while (sidesToParse.nonEmpty) {
-      println((x, y))
-      if (x == lines(y).size) {
-        x = 0
-        y += width
-      } else if (lines(y).charAt(x) == ' ') {
-        x += width
-      } else {
-        val side = sidesToParse.head
-        sidesToParse = sidesToParse.tail
-        var sideGrid = mutable.Map[Vec2, Char]()
-        y.until(y + width).map { i =>
-          x.until(x + width).map { j =>
-            val pos = Vec2(j + side.offsetX * width, i + side.offsetY * width)
-            sideGrid(pos) = lines(i).charAt(j)
-          }
-        }
-        sideGrid = rotate(sideGrid, side.rotationDegrees, width)
-        grid ++= sideGrid
-        x += width
-      }
-    }
-    (grid, parsePath(rawPath))
-  }
-
-  // original
-  // (0,0), (1, 0), (2,0)
-  // (0,1), (1, 1), (2,1)
-  // (0,2), (1, 2), (2,2)
-  // rotated once
-  // (0,2), (0, 1), (0,0)
-  // (1,2), (1, 1), (1,0)
-  // (2,2), (2, 1), (2,0)
-  // y1 := x0
-  // x1 -> max - y0
-
-  // rotate clockwise
-  def rotate(
-      grid: mutable.Map[Vec2, Char],
-      degrees: Int,
-      width: Int
-  ) = {
-    var prevGrid = grid
-    println(s"rotating grid $degrees degrees")
-    0.until(degrees / 90).foreach { _ =>
-      val rotatedGrid = mutable.Map[Vec2, Char]()
-      val minX: Long = prevGrid.keys.minBy(_.x).x
-      val minY: Long = prevGrid.keys.minBy(_.y).y
-      println((minX, minY))
-
-      val layers = width / 2
-      0.until(layers).map { l =>
-        (minX + l).until(minX + width - l).foreach { x =>
-          //top -> right
-          rotatedGrid(Vec2(minX + width - 1 - 2 * l, x)) = prevGrid(Vec2(x, minY + l))
-          //right -> bottom
-          //bottom -> left
-          //left -> top
-        }
-        (minY + l).until(minY + width - l).foreach { y =>
-        }
-      }
-
-      prevGrid.foreach { case (pos, char) =>
-        val newX = minX + width - 1 - pos.y % width
-        val newY = minY + pos.x % width
-        println(s"old: $pos, new: $newX $newY")
-        rotatedGrid += (Vec2(
-          newX,
-          newY
-        ) -> char)
-      }
-      println(s"grid before rotation:")
-      printGrid(prevGrid, width)
-      println(prevGrid)
-      println(s"grid after rotation:")
-      printGrid(rotatedGrid, width)
-      println(rotatedGrid)
-      prevGrid = rotatedGrid
-    }
-
-    prevGrid
-  }
-
-  def gridString(grid: mutable.Map[Vec2, Char]): String = {
-    val minX: Long = grid.keys.minBy(_.x).x
-    val minY: Long = grid.keys.minBy(_.y).y
-    val maxX: Long = grid.keys.maxBy(_.x).x
-    val maxY: Long = grid.keys.maxBy(_.y).y
-    println((minX,maxX,minY,maxY))
-    var str = ""
-    minY.to(maxY).map { y =>
-      minX.to(maxX).map { x =>
-        str += grid.getOrElse(Vec2(x, y), " ")
-      }
-      str += "\n"
-    }
-    str
-  }
-
+  //.FR
+  //.T
+  //LB
+  //U
+  //
+  //start: (50,0)
+  //Right
+  //
+  //
+  //Down
+  //
+  //Left
+  //
+  //Up
+  //
   private def move2(
       grid: mutable.Map[Vec2, Char],
       width: Int,
@@ -228,110 +114,100 @@ object Day22 {
 
     0.until(n).foreach { _ =>
       dir match {
+        //.FR
+        //.T
+        //LB
+        //U
         // right
         case 0 =>
           nextPos = add(changedPos, Vec2(1, 0))
-          if (
-            nextPos.y >= 0 && nextPos.y < width && nextPos.x > startPos.x + width
-          ) {
-            //front -> right
-            nextPos = Vec2(startPos.x + 2 * width - 1 - nextPos.y, width)
-            nextDir = down
-          } else if (
-            nextPos.y >= width && nextPos.y < 2 * width && nextPos.x > startPos.x + 2 * width
-          ) {
-            // right -> bottom
-            nextPos = Vec2(
-              startPos.x + width - 1,
-              width - nextPos.y % width + 3 * width
-            )
+          if (nextPos.y < width && nextPos.x > 3 * width) {
+            // R -> B
+            nextPos = add(changedPos, Vec2(-width, 2*width))
             nextDir = left
-          } else if (
-            nextPos.y >= 2 * width && nextPos.y < 3 * width && nextPos.x > startPos.x + width
-          ) {
-            // back -> right
-            nextPos =
-              Vec2(startPos.x + width + nextPos.y - 2 * width, 2 * width - 1)
+          } else if(nextPos.y < 2 * width && nextPos.x > 2 * width) {
+            // T -> R
+            nextPos = Vec2(changedPos.y%width, width -1)
             nextDir = up
-          } else if (nextPos.y > 3 * width && nextPos.x > startPos.x + width) {
-            // bottom -> right?
-            nextPos =
-              Vec2(startPos.x + 2 * width - 1, 2 * width - nextPos.y % width)
+          } else if(nextPos.y < 3 * width && nextPos.x > 2 * width) {
+            // B -> R
+            nextPos = Vec2(3*width-1, width-changedPos.y%width)
             nextDir = left
+          } else if(nextPos.y < 4 * width && nextPos.x > width) {
+            // U -> B
+            nextPos = Vec2(3*width-1, 3*width-1)
+            nextDir = up
+          } else {
+            ???
           }
-        // down
+
+          // down
+        //.FR
+        //.T
+        //LB
+        //U
         case 1 =>
           nextPos = add(changedPos, Vec2(0, 1))
-
-          if (
-            nextPos.x >= startPos.x && nextPos.x < startPos.x + width && nextPos.y > 4 * width
-          ) {
-            // bottom -> front
-            nextPos = Vec2(nextPos.x, 0)
+          if (nextPos.x < width && nextPos.y > 4 * width) {
+            // U -> R
+            nextPos = Vec2(changedPos.x + 2 * width, 0)
             nextDir = down
-          } else if (nextPos.x >= startPos.x + width && nextPos.y > 2 * width) {
-            // right -> back
-            nextPos = Vec2(
-              startPos.x + width - 1,
-              startPos.y + width + nextPos.y % width
-            )
+          } else if (nextPos.x < 2 * width && nextPos.y > 3 * width) {
+            // B -> U
+            nextPos = Vec2(startPos.x-1, 3*width+changedPos.x%width)
             nextDir = left
-          } else if (nextPos.x < startPos.x && nextPos.y > 2 * width) {
-            // left -> back
-            nextPos = Vec2(startPos.x, 2 * width + (nextPos.x - startPos.x).abs)
-            nextDir = right
-          } else {
-            ???
-          }
-        // left
+          } else if (nextPos.x < 3 * width && nextPos.y > width) {
+            // R -> T
+            nextPos = Vec2(2*width-1, width+changedPos.x%width)
+            nextDir = left
+          } else { ??? }
+
+          //left
+        //.FR
+        //.T
+        //LB
+        //U
         case 2 =>
           nextPos = add(changedPos, Vec2(-1, 0))
-          if (nextPos.y >= 0 && nextPos.y < width && nextPos.x < startPos.x) {
-            //front -> left
-            nextPos = Vec2(startPos.x - 2 * width - 1 + nextPos.y, width)
+          if (nextPos.y < width && nextPos.x < width) {
+            // F -> L
+            nextPos = Vec2(0, 2*width + width-(changedPos.y%width))
+            nextDir = right
+          } else if(nextPos.y < 2 * width && nextPos.x < width) {
+            // T -> L
+            nextPos = Vec2(changedPos.y%width, 2*width)
             nextDir = down
-          } else if (
-            nextPos.y >= width && nextPos.y < 2 * width && nextPos.x < startPos.x - width
-          ) {
-            //left -> bottom
-            nextPos = Vec2(startPos.x, width - nextPos.y % width + 3 * width)
+          } else if(nextPos.y < 3 * width && nextPos.x < 0) {
+            // L -> F
+            nextPos = Vec2(width, width-changedPos.y%width)
             nextDir = right
-          } else if (
-            nextPos.y >= 2 * width && nextPos.y < 3 * width && nextPos.x < startPos.x
-          ) {
-            // back -> left
-            nextPos = Vec2(startPos.x - (nextPos.y - 2 * width), 2 * width - 1)
-            nextDir = up
-          } else if (nextPos.y > 3 * width && nextPos.x < startPos.x) {
-            // bottom -> left
-            nextPos =
-              Vec2(startPos.x - width - 1, 2 * width - nextPos.y % width)
-            nextDir = right
-          }
-
-        //up
-        case 3 =>
-          nextPos = add(changedPos, Vec2(0, -1))
-
-          if (
-            nextPos.x >= startPos.x && nextPos.x < startPos.x + width && nextPos.y < 0
-          ) {
-            // front -> bottom
-            nextPos = Vec2(nextPos.x, 4 * width - 1)
-            nextDir = up
-          } else if (nextPos.x >= startPos.x + width && nextPos.y > width) {
-            // right -> front
-            nextPos = Vec2(startPos.x + width - 1, width - nextPos.x % width)
-            nextDir = left
-          } else if (nextPos.x < startPos.x && nextPos.y > width) {
-            // left -> front
-            nextPos =
-              Vec2(startPos.x, width - (nextPos.x - startPos.x).abs % width)
-            nextDir = right
+          } else if(nextPos.y < 4 * width && nextPos.x < 0) {
+            // U -> F
+            nextPos = ???
+            nextDir = down
           } else {
             ???
           }
-
+          // up
+        //.FR
+        //.T
+        //LB
+        //U
+        case 3 =>
+          nextPos = add(changedPos, Vec2(0, -1))
+          if (nextPos.x < width && nextPos.y < 3 * width) {
+            // L -> T
+            nextPos = Vec2(width, width+changedPos.x + width)
+            nextDir = right
+          } else if (nextPos.x < 2 * width && nextPos.y < 0) {
+            // F -> U
+            nextPos = Vec2(0, 3*width+changedPos.x%width)
+            nextDir = right
+          } else if (nextPos.x < 3 * width && nextPos.y < 0) {
+            // R -> U
+            nextPos = Vec2(width-1,changedPos.x%width)
+            nextDir = up
+          } else { ??? }
       }
       if (grid(nextPos) != '#') {
         changedPos = nextPos
@@ -342,6 +218,58 @@ object Day22 {
     }
 
     (changedPos, changedDir)
+  }
+
+
+  private def printGrid(grid: mutable.Map[Vec2, Char], width: Int) = {
+    0.until(width * 5).map { y =>
+      0.until(width * 4).map { x =>
+        print(grid.getOrElse(Vec2(x, y), " "))
+      }
+      println()
+    }
+  }
+
+  private def parse2(input: Seq[String]) = {
+    val ss = split(input)
+    val (lines, rawPath) = (ss.head, ss.last.head)
+
+    var y = 0
+    var x = 0
+    val grid = mutable.Map[Vec2, Char]()
+    while (y < lines.size) {
+      if (x == lines(y).size) {
+        x = 0
+        y += width
+      } else if (lines(y).charAt(x) == ' ') {
+        x += width
+      } else {
+        y.until(y + width).map { i =>
+          x.until(x + width).map { j =>
+            val pos = Vec2(j, i)
+            grid(pos) = lines(i).charAt(j)
+          }
+        }
+        x += width
+      }
+    }
+    (grid, parsePath(rawPath))
+  }
+
+  def gridString(grid: mutable.Map[Vec2, Char]): String = {
+    val minX: Long = grid.keys.minBy(_.x).x
+    val minY: Long = grid.keys.minBy(_.y).y
+    val maxX: Long = grid.keys.maxBy(_.x).x
+    val maxY: Long = grid.keys.maxBy(_.y).y
+    println((minX,maxX,minY,maxY))
+    var str = ""
+    minY.to(maxY).map { y =>
+      minX.to(maxX).map { x =>
+        str += grid.getOrElse(Vec2(x, y), " ")
+      }
+      str += "\n"
+    }
+    str
   }
 
   private def move(
