@@ -35,7 +35,7 @@ class Day22Test extends munit.FunSuite {
         startPos = Vec2(50, 0),
         testPath = "LL1LL1"
       ),
-      (Vec2(50, 0), 1)
+      (Vec2(50, 0), 0)
     )
   }
 
@@ -251,7 +251,7 @@ class Day22Test extends munit.FunSuite {
         doOutput = false,
         isManual = false
       ),
-      (Vec2(0, 100), 1)
+      (Vec2(0, 100), 0)
     )
   }
 
