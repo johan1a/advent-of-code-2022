@@ -247,7 +247,9 @@ class Day22Test extends munit.FunSuite {
       Day22.part2(
         getInput("day22/input.txt"),
         startPos = Vec2(0, 100),
-        testPath = "LL1RR1"
+        testPath = "LL1RR1",
+        doOutput=false,
+        isManual=false,
       ),
       (Vec2(0, 100), 1)
     )
@@ -354,23 +356,32 @@ class Day22Test extends munit.FunSuite {
         getInput("day22/input.txt"),
         startPos = Vec2(49, 150),
         testPath = "L1R1R1RR1L1L1",
-        doOutput=true,
+        doOutput=false,
         isManual=false),
       (Vec2(49,150), 1)
     )
   }
 
   test("Corner U L F U") {
+    assertEquals(
+      Day22.part2(
+        getInput("day22/input.txt"),
+        startPos = Vec2(0, 150),
+        testPath = "L1L1L1LL1R1R1R",
+        doOutput=false,
+        isManual=false),
+      (Vec2(0,150), 2)
+    )
   }
 
 //   50273 too low
 //   64335 too high
 //   116185 too high
 //   189127 not submitted
-  // test("Part 2") {
-  //   val (pos, dir) = Day22.part2(getInput("day22/input.txt"), doOutput=false)
-  //   val result = 1000 * (pos.y.toInt + 1) + 4 * (pos.x.toInt + 1) + dir
-  //   assertEquals(result, 1)
-  // }
+  test("Part 2") {
+    val (pos, dir) = Day22.part2(getInput("day22/input.txt"), doOutput=false)
+    val result = 1000 * (pos.y.toInt + 1) + 4 * (pos.x.toInt + 1) + dir
+    assertEquals(result, 55267)
+  }
 
 }

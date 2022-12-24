@@ -234,7 +234,7 @@ object Day22 {
         case 2 =>
           nextPos = add(changedPos, Vec2(-1, 0))
           if (nextPos.y < width && nextPos.x < width) {
-            nextPos = Vec2(0, 2 * width + width - (changedPos.y % width))
+            nextPos = Vec2(0, 2 * width + width - 1 -  (changedPos.y % width))
             log(s"F -> L, nextPos: $nextPos")
             nextDir = right
           } else if (
@@ -247,7 +247,7 @@ object Day22 {
             nextPos.y >= 2 * width && nextPos.y < 3 * width && nextPos.x < 0
           ) {
             log("L -> F")
-            nextPos = Vec2(width, width - changedPos.y % width)
+            nextPos = Vec2(width, width - 1 - changedPos.y % width)
             nextDir = right
           } else if (
             nextPos.y >= 3 * width && nextPos.y < 4 * width && nextPos.x < 0
