@@ -75,7 +75,7 @@ object Day22 {
     var pos = startPos
 
     path.foreach { action =>
-      if(output){
+      if (output) {
         printAround(grid, pos, dir)
       }
       log(s"\npos: $pos, dir: ${dirString(dir)}")
@@ -98,7 +98,7 @@ object Day22 {
       }
     }
 
-    if(output){
+    if (output) {
       log(s"\npos: $pos, dir: ${dirString(dir)}")
       printAround(grid, pos, dir)
       if (manual) {
@@ -117,7 +117,7 @@ object Day22 {
     val d = 7
     (-d).until(d).map { ydiff =>
       (-d).until(d).map { xdiff =>
-        if (ydiff ==0 && xdiff == 0) {
+        if (ydiff == 0 && xdiff == 0) {
           dir match {
             case 0 => print('>')
             case 1 => print('v')
@@ -131,7 +131,6 @@ object Day22 {
       println()
     }
   }
-
 
   //.FR
   //.T
@@ -177,7 +176,8 @@ object Day22 {
           //log(s"nextPos before: $nextPos")
           if (nextPos.y < width && nextPos.x >= 3 * width) {
             log("R -> B")
-            nextPos = Vec2(changedPos.x - width, 3 * width - changedPos.y % width)
+            nextPos =
+              Vec2(changedPos.x - width, 3 * width - changedPos.y % width)
             nextDir = left
           } else if (
             nextPos.y >= width && nextPos.y < 2 * width && nextPos.x >= 2 * width
@@ -234,7 +234,7 @@ object Day22 {
         case 2 =>
           nextPos = add(changedPos, Vec2(-1, 0))
           if (nextPos.y < width && nextPos.x < width) {
-            nextPos = Vec2(0, 2 * width + width - 1 -  (changedPos.y % width))
+            nextPos = Vec2(0, 2 * width + width - 1 - (changedPos.y % width))
             log(s"F -> L, nextPos: $nextPos")
             nextDir = right
           } else if (

@@ -248,8 +248,8 @@ class Day22Test extends munit.FunSuite {
         getInput("day22/input.txt"),
         startPos = Vec2(0, 100),
         testPath = "LL1RR1",
-        doOutput=false,
-        isManual=false,
+        doOutput = false,
+        isManual = false
       ),
       (Vec2(0, 100), 1)
     )
@@ -323,20 +323,15 @@ class Day22Test extends munit.FunSuite {
   }
 
   // corners
-  test("Corner T B L T") {
-  }
+  test("Corner T B L T") {}
 
-  test("Corner T L F T") {
-  }
+  test("Corner T L F T") {}
 
-  test("Corner B T R B") {
-  }
+  test("Corner B T R B") {}
 
-  test("Corner B T L B") {
-  }
+  test("Corner B T L B") {}
 
-  test("Corner U F R U") {
-  }
+  test("Corner U F R U") {}
 
   test("Corner U B R U") {
     assertEquals(
@@ -344,9 +339,10 @@ class Day22Test extends munit.FunSuite {
         getInput("day22/input.txt"),
         startPos = Vec2(47, 198),
         testPath = "4R4R4LL4L4L4",
-        doOutput=false,
-        isManual=false),
-      (Vec2(47,198), 2)
+        doOutput = false,
+        isManual = false
+      ),
+      (Vec2(47, 198), 2)
     )
   }
 
@@ -356,9 +352,10 @@ class Day22Test extends munit.FunSuite {
         getInput("day22/input.txt"),
         startPos = Vec2(49, 150),
         testPath = "L1R1R1RR1L1L1",
-        doOutput=false,
-        isManual=false),
-      (Vec2(49,150), 1)
+        doOutput = false,
+        isManual = false
+      ),
+      (Vec2(49, 150), 1)
     )
   }
 
@@ -368,9 +365,10 @@ class Day22Test extends munit.FunSuite {
         getInput("day22/input.txt"),
         startPos = Vec2(0, 150),
         testPath = "L1L1L1LL1R1R1R",
-        doOutput=false,
-        isManual=false),
-      (Vec2(0,150), 2)
+        doOutput = false,
+        isManual = false
+      ),
+      (Vec2(0, 150), 2)
     )
   }
 
@@ -379,7 +377,7 @@ class Day22Test extends munit.FunSuite {
 //   116185 too high
 //   189127 not submitted
   test("Part 2") {
-    val (pos, dir) = Day22.part2(getInput("day22/input.txt"), doOutput=false)
+    val (pos, dir) = Day22.part2(getInput("day22/input.txt"), doOutput = false)
     val result = 1000 * (pos.y.toInt + 1) + 4 * (pos.x.toInt + 1) + dir
     assertEquals(result, 55267)
   }
