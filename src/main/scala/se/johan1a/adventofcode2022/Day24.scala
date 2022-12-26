@@ -16,9 +16,8 @@ object Day24 {
     seen = Map()
     best = large
     i = 0
-    val blizzards = parse(input)
+    val (blizzards, walls) = parse(input)
 
-    //blizzards.foreach{println}
     var pos = Vec2(1, 0)
     val min = Vec2(1, 1)
     val max = Vec2(input.head.size, input.size)
@@ -27,82 +26,64 @@ object Day24 {
     val width = max.x - 2
     val height = max.y - 2
 
-    val r = shortest(blizzards, pos, target, max)
+    val r = shortest(blizzards, walls, pos, target, max)
     println((min, max, target, seen.size))
 
-    r._1
+    r
   }
 
   def shortest(
       startBlizzards: Seq[Blizzard],
+      walls: Set[Vec2],
       startPos: Vec2,
       target: Vec2,
       maxPos: Vec2
-  ): (Int, Seq[Vec2]) = {
-    val queue = Queue[(Vec2, Int)]((startPos, 0))
-    seen = seen + ((startPos, 0) -> 0)
+  ): Int = {
+    var states = Set[Vec2](startPos)
+    var blizzards = startBlizzards
 
     val width = maxPos.x - 2
     val height = maxPos.y - 2
     val lcm = getLcm(Seq(width.toInt, height.toInt))
     println(s"width:$width, height:$height, lcm: $lcm")
+    var minutes = 0
 
-    while (queue.nonEmpty) {
-      val (pos, minutes) = queue.dequeue()
+    while (true) {
+      minutes += 1
+      var newStates = Set[Vec2]()
 
-      val state = (pos, minutes % lcm)
-
-      assert(i < 1000000)
+      assert(i < 10000000)
       i += 1
-      if (i % 1000 == 0) {
-        println(s"i: $i, queue.size: ${queue.size}, seen.size: ${seen.size}")
+      if (i % 100000 == 0) {
+        println(s"i: $i, minutes: $minutes")
       }
 
-      if (pos == target) {
-        println(s"reached target after $minutes min")
-        best = Math.min(best, minutes)
-        return (best, Seq.empty)
-      } else {
-        var newPositions = neighbors(
+      blizzards = moveBlizzards(blizzards, maxPos)
+      val blizzardPositions = blizzards.map(_.pos).toSet
+
+      states.foreach { pos =>
+        if (!blizzardPositions.contains(pos)) {
+          newStates = newStates + pos
+        }
+        var nn = neighbors(
           pos,
-          min = Vec2(1, 1),
-          max = maxPos,
           includeDiagonals = false
-        ) :+ pos
+        )
         if (pos == Vec2(target.x, target.y - 1)) {
-          newPositions = target +: newPositions
+          nn = target +: nn
         }
-
-        var blizzards = startBlizzards
-
-        0.until(minutes % lcm).foreach { _ =>
-          blizzards = moveBlizzards(blizzards, maxPos)
-        }
-        val blizzardPositions = blizzards.map(_.pos).toSet
-        newPositions = newPositions.filterNot { p =>
-          blizzardPositions.contains(p)
-        }
-
-        if (false) {
-          printMap(blizzards, pos, target, maxPos)
-          println()
-          println(state)
-          readLine()
-        }
-
-        val nn =
-          newPositions.map(p => (p, minutes + 1)).filter { case (newP, newM) =>
-            val newState = (newP, newM % lcm)
-            val r = !seen.contains(newState)
-            seen = seen + (newState -> newM)
-            r
+        nn.foreach { neighbor =>
+          if (neighbor.x >= 0 && neighbor.y >= 0 && !walls.contains(neighbor) && !blizzardPositions.contains(neighbor)) {
+            newStates = newStates + neighbor
+            if (neighbor == target) {
+              return minutes
+            }
           }
-
-        queue.enqueueAll(nn)
+        }
       }
+      states = newStates
     }
-
-    (best, Seq.empty)
+    minutes
   }
 
   def moveBlizzards(blizzards: Seq[Blizzard], maxPos: Vec2) = {
@@ -177,16 +158,19 @@ object Day24 {
 
   case class Blizzard(dir: Char, pos: Vec2)
 
-  def parse(input: Seq[String]): Seq[Blizzard] = {
+  def parse(input: Seq[String]): (Seq[Blizzard], Set[Vec2]) = {
+    var walls = Set[Vec2]()
     var blizzards = Seq[Blizzard]()
     input.indices.foreach { y =>
       input.head.indices.foreach { x =>
         if (Set('>', '<', '^', 'v').contains(input(y).charAt(x))) {
           blizzards = blizzards :+ Blizzard(input(y).charAt(x), Vec2(x, y))
+        } else if (input(y).charAt(x) == '#') {
+          walls = walls + Vec2(x,y)
         }
       }
     }
-    blizzards
+    (blizzards,walls)
   }
 
   def getLcm(list: Seq[Int]): Int = list.foldLeft(1: Int) { (a, b) =>
