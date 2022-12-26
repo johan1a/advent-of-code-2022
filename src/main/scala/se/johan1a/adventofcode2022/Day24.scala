@@ -2,17 +2,18 @@ package se.johan1a.adventofcode2022
 
 import Utils._
 import scala.io.StdIn.readLine
+import scala.collection.mutable.{Queue, Map}
 
 object Day24 {
 
   var i = 0
-  var cache = Map[(Vec2, Int, Int), Int]()
+  var seen = Map[(Vec2, Int), Int]()
 
   val large = 1000000000
   var best = large
 
   def part1(input: Seq[String]): Int = {
-    cache = Map()
+    seen = Map()
     best = large
     i = 0
     val blizzards = parse(input)
@@ -23,69 +24,85 @@ object Day24 {
     val max = Vec2(input.head.size, input.size)
     var target = Vec2(input.head.size - 2, input.size - 1)
 
-    val r = shortest(blizzards, pos, target, max, 0)
-    println((min, max, target, cache.size))
-    //r._2.foreach(println)
+    val width = max.x - 2
+    val height = max.y - 2
+
+    val r = shortest(blizzards, pos, target, max)
+    println((min, max, target, seen.size))
+
     r._1
   }
 
   def shortest(
-      blizzards: Seq[Blizzard],
-      pos: Vec2,
+      startBlizzards: Seq[Blizzard],
+      startPos: Vec2,
       target: Vec2,
-      maxPos: Vec2,
-      minutes: Int
+      maxPos: Vec2
   ): (Int, Seq[Vec2]) = {
-
-    assert(i < 1000000)
-    i += 1
+    val queue = Queue[(Vec2, Int)]((startPos, 0))
+    seen = seen + ((startPos, 0) -> 0)
 
     val width = maxPos.x - 2
     val height = maxPos.y - 2
-    val state = (pos, (minutes % width).toInt, (minutes % height).toInt)
+    val lcm = getLcm(Seq(width.toInt, height.toInt))
+    println(s"width:$width, height:$height, lcm: $lcm")
 
-    if (false) {
-      printMap(blizzards, pos, target, maxPos)
-      println()
-      println(state)
-      readLine()
-    }
+    while (queue.nonEmpty) {
+      val (pos, minutes) = queue.dequeue()
 
+      val state = (pos, minutes % lcm)
 
-    if (best <= minutes || cache.contains(state) && cache(state) <= minutes) {
-      (best, Seq.empty)
-    } else if (pos == target) {
-      println(s"reached target after $minutes min")
-      best = Math.min(best, minutes)
-      (best, Seq(pos))
-    } else {
-      cache = cache + (state -> minutes)
-
-      var newPositions = neighbors(
-        pos,
-        min = Vec2(1, 1),
-        max = maxPos,
-        includeDiagonals = false
-      ) :+ pos
-      if (pos == Vec2(target.x, target.y - 1)) {
-        newPositions = target +: newPositions
+      assert(i < 1000000)
+      i += 1
+      if (i % 1000 == 0) {
+        println(s"i: $i, queue.size: ${queue.size}, seen.size: ${seen.size}")
       }
 
-      val newBlizzards = moveBlizzards(blizzards, maxPos)
-      val blizzardPositions = newBlizzards.map(_.pos).toSet
-      newPositions = newPositions.filterNot { p =>
-        blizzardPositions.contains(p)
+      if (pos == target) {
+        println(s"reached target after $minutes min")
+        best = Math.min(best, minutes)
+        return (best, Seq.empty)
+      } else {
+        var newPositions = neighbors(
+          pos,
+          min = Vec2(1, 1),
+          max = maxPos,
+          includeDiagonals = false
+        ) :+ pos
+        if (pos == Vec2(target.x, target.y - 1)) {
+          newPositions = target +: newPositions
+        }
+
+        var blizzards = startBlizzards
+
+        0.until(minutes % lcm).foreach { _ =>
+          blizzards = moveBlizzards(blizzards, maxPos)
+        }
+        val blizzardPositions = blizzards.map(_.pos).toSet
+        newPositions = newPositions.filterNot { p =>
+          blizzardPositions.contains(p)
+        }
+
+        if (false) {
+          printMap(blizzards, pos, target, maxPos)
+          println()
+          println(state)
+          readLine()
+        }
+
+        val nn =
+          newPositions.map(p => (p, minutes + 1)).filter { case (newP, newM) =>
+            val newState = (newP, newM % lcm)
+            val r = !seen.contains(newState)
+            seen = seen + (newState -> newM)
+            r
+          }
+
+        queue.enqueueAll(nn)
       }
-
-      val results =
-        newPositions.map(p =>
-          shortest(newBlizzards, p, target, maxPos, minutes + 1)
-        )
-
-      val r = results.minByOption(_._1).getOrElse((large, Seq.empty))
-
-      (r._1, pos +: r._2)
     }
+
+    (best, Seq.empty)
   }
 
   def moveBlizzards(blizzards: Seq[Blizzard], maxPos: Vec2) = {
@@ -170,5 +187,14 @@ object Day24 {
       }
     }
     blizzards
+  }
+
+  def getLcm(list: Seq[Int]): Int = list.foldLeft(1: Int) { (a, b) =>
+    b * a / Stream
+      .iterate((a, b)) { case (x, y) => (y, x % y) }
+      .dropWhile(_._2 != 0)
+      .head
+      ._1
+      .abs
   }
 }
