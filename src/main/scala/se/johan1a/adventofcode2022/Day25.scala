@@ -1,5 +1,7 @@
 package se.johan1a.adventofcode2022
 
+import scala.collection.mutable.Buffer
+
 object Day25 {
 
   def part1(input: Seq[String]): String = {
@@ -9,9 +11,8 @@ object Day25 {
   def fromSnafu(input: String): Long = {
     var i = 0
     var sum = 0L
-    var p = 0
     while (i < input.size) {
-      var k = 1
+      var k = 1L
       0.until(i).foreach { _ =>
         k = k * 5
       }
@@ -26,34 +27,43 @@ object Day25 {
       sum = sum + d
       i += 1
     }
-    //println(s"input:$input, sum:$sum")
+    assert(toSnafu(sum) == input)
     sum
   }
 
   def toSnafu(input: Long): String = {
-    println(s"Converting $input...")
-
-    var res = ""
-
-    var r = input + 12
-    var k = 0
-    while (Math.pow(5, k) < r) {
-      k += 1
-    }
-    println(s"k: $k")
-
-    while (k > 0) {
-      k = k - 1
-      var l = 4
-      while (l * Math.pow(5, k) > r) {
-        l -= 1
+    if (input == 0) {
+      ""
+    } else {
+      val m = input / 5
+      val k = input % 5
+      k match {
+        case 0 => toSnafu(m) + "0"
+        case 1 => toSnafu(m) + "1"
+        case 2 => toSnafu(m) + "2"
+        case 3 => toSnafu(m + 1) + "="
+        case 4 => toSnafu(m + 1) + "-"
       }
-      res += digit(l)
-      r = r - l * 5 * k
-      println(s"k: $k, l: $l, res: $res, r: $r")
     }
+  }
 
-    res
+  private def inc(s: String) = {
+    s match {
+      case "=" => "-"
+      case "-" => "0"
+      case "0" => "1"
+      case "1" => "2"
+      case "2" => ???
+    }
+  }
+
+  private def dec(s: String) = {
+    s match {
+      case "-" => "="
+      case "0" => "-"
+      case "1" => "0"
+      case "2" => "1"
+    }
   }
 
   private def digit(n: Long) = {
