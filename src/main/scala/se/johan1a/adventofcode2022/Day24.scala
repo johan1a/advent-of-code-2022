@@ -23,7 +23,6 @@ object Day24 {
     val height = max.y - 2
 
     val (r, _) = shortest(blizzards, walls, pos, target, max)
-    println((min, max, target))
 
     r
   }
@@ -40,13 +39,9 @@ object Day24 {
     val width = max.x - 2
     val height = max.y - 2
 
-    println((min, max, target))
     val (r0, b0) = shortest(blizzards, walls, pos, target, max)
-    println(s"r0:$r0")
     val (r1, b1) = shortest(b0, walls, target, pos, max)
-    println(s"r1:$r0")
     val (r2, _) = shortest(b1, walls, pos, target, max)
-    println(s"r2:$r0")
 
     r0 + r1 + r2
   }
@@ -64,7 +59,6 @@ object Day24 {
     val width = maxPos.x - 2
     val height = maxPos.y - 2
     val lcm = getLcm(Seq(width.toInt, height.toInt))
-    println(s"width:$width, height:$height, lcm: $lcm")
     var minutes = 0
 
     while (true) {
@@ -73,9 +67,6 @@ object Day24 {
 
       assert(i < 1000000)
       i += 1
-      if (i % 100000 == 0) {
-        println(s"i: $i, minutes: $minutes, states.head: ${states.head}")
-      }
 
       blizzards = moveBlizzards(blizzards, maxPos)
       val blizzardPositions = blizzards.map(_.pos).toSet
