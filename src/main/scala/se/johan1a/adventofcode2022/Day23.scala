@@ -32,9 +32,10 @@ object Day23 {
 
           var i = 0
           while (i < 4 && elf.proposedTarget.isEmpty) {
-            val offsets = offsetList((elf.dirI+i) % 4)
+            val offsets = offsetList((elf.dirI + i) % 4)
             if (offsets.forall(o => !elves.contains(add(pos, o)))) {
-              elf.proposedTarget = Some(add(pos, directions((elf.dirI+i) % 4)))
+              elf.proposedTarget =
+                Some(add(pos, directions((elf.dirI + i) % 4)))
             }
 
             i = i + 1
@@ -51,15 +52,15 @@ object Day23 {
         .mapValues(_.size)
         .toMap
 
-      val newElves = Map[Vec2,Elf]()
+      val newElves = Map[Vec2, Elf]()
       elves.foreach { case (pos, elf) =>
         elf.proposedTarget match {
           case None =>
-              newElves(pos) = elf
+            newElves(pos) = elf
           case Some(proposed) =>
             if (posCounts.getOrElse(proposed, 0) == 1) {
               newElves(proposed) = elf
-            } else{
+            } else {
               newElves(pos) = elf
             }
         }
@@ -68,7 +69,7 @@ object Day23 {
       }
       elves = newElves
       assert(elves.size == size)
-      // printElves(elves)
+    // printElves(elves)
     }
     val minX: Long = elves.keys.minBy(_.x).x
     val minY: Long = elves.keys.minBy(_.y).y
@@ -99,10 +100,10 @@ object Day23 {
   def part2(input: Seq[String]): Int = {
     var elves = parse(input)
     val size = elves.size
-    var shouldContinue=true
+    var shouldContinue = true
 
-    var round=1
-    while(round < 10000) {
+    var round = 1
+    while (round < 10000) {
 
       elves.foreach { case (pos, elf) =>
         val nn = neighbors(pos, includeDiagonals = true)
@@ -110,9 +111,10 @@ object Day23 {
 
           var i = 0
           while (i < 4 && elf.proposedTarget.isEmpty) {
-            val offsets = offsetList((elf.dirI+i) % 4)
+            val offsets = offsetList((elf.dirI + i) % 4)
             if (offsets.forall(o => !elves.contains(add(pos, o)))) {
-              elf.proposedTarget = Some(add(pos, directions((elf.dirI+i) % 4)))
+              elf.proposedTarget =
+                Some(add(pos, directions((elf.dirI + i) % 4)))
             }
 
             i = i + 1
@@ -129,28 +131,28 @@ object Day23 {
         .mapValues(_.size)
         .toMap
 
-      val newElves = Map[Vec2,Elf]()
+      val newElves = Map[Vec2, Elf]()
       elves.foreach { case (pos, elf) =>
         elf.proposedTarget match {
           case None =>
-              newElves(pos) = elf
+            newElves(pos) = elf
           case Some(proposed) =>
             if (posCounts.getOrElse(proposed, 0) == 1) {
               newElves(proposed) = elf
-            } else{
+            } else {
               newElves(pos) = elf
             }
         }
         elf.proposedTarget = None
         elf.dirI = elf.dirI + 1
       }
-      if(elves.keys==newElves.keys){
+      if (elves.keys == newElves.keys) {
         return round
       }
       elves = newElves
       assert(elves.size == size)
       // printElves(elves)
-      round+=1
+      round += 1
     }
     val minX: Long = elves.keys.minBy(_.x).x
     val minY: Long = elves.keys.minBy(_.y).y
