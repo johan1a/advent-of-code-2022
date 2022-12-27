@@ -47,35 +47,6 @@ object Day25 {
     }
   }
 
-  private def inc(s: String) = {
-    s match {
-      case "=" => "-"
-      case "-" => "0"
-      case "0" => "1"
-      case "1" => "2"
-      case "2" => ???
-    }
-  }
-
-  private def dec(s: String) = {
-    s match {
-      case "-" => "="
-      case "0" => "-"
-      case "1" => "0"
-      case "2" => "1"
-    }
-  }
-
-  private def digit(n: Long) = {
-    n match {
-      case 0 => "="
-      case 1 => "-"
-      case 2 => "0"
-      case 3 => "1"
-      case 4 => "2"
-    }
-  }
-
   def part2(input: Seq[String]): Int = {
     -1
   }
