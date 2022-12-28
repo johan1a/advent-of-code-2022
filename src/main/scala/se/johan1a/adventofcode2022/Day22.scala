@@ -34,27 +34,10 @@ object Day22 {
         case turnAction =>
           dir = turn(dir, turnAction)
       }
-
     }
 
     1000 * (pos.y.toInt + 1) + 4 * (pos.x.toInt + 1) + dir
   }
-
-  trait SideType
-  case object Front extends SideType
-  case object Top extends SideType
-  case object Back extends SideType
-  case object Bottom extends SideType
-  case object Left extends SideType
-  case object Right extends SideType
-
-  // rotations are clockwise
-  case class InputSide(
-      side: SideType,
-      offsetX: Int,
-      offsetY: Int,
-      rotationDegrees: Int
-  )
 
   def part2(
       input: Seq[String],
@@ -136,17 +119,6 @@ object Day22 {
   //.T
   //LB
   //U
-  //
-  //start: (50,0)
-  //Right
-  //
-  //
-  //Down
-  //
-  //Left
-  //
-  //Up
-  //
   private def move2(
       grid: mutable.Map[Vec2, Char],
       width: Int,
@@ -367,7 +339,6 @@ object Day22 {
         case 0 =>
           nextPos = add(changedPos, Vec2(1, 0))
           if (nextPos.x > xBounds(startY)._2) {
-            //log(s"nextpos: $nextPos, xBounds(startY)._2: ${xBounds(startY)._2}")
             nextPos = Vec2(xBounds(startY)._1, nextPos.y)
           }
         case 1 =>
@@ -388,8 +359,6 @@ object Day22 {
       }
       if (grid(nextPos) != '#') {
         changedPos = nextPos
-      } else {
-        //log(s"hit a wall at ${nextPos}")
       }
     }
 

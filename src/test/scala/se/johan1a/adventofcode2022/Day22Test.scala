@@ -322,17 +322,6 @@ class Day22Test extends munit.FunSuite {
     )
   }
 
-  // corners
-  test("Corner T B L T") {}
-
-  test("Corner T L F T") {}
-
-  test("Corner B T R B") {}
-
-  test("Corner B T L B") {}
-
-  test("Corner U F R U") {}
-
   test("Corner U B R U") {
     assertEquals(
       Day22.part2(
@@ -372,10 +361,6 @@ class Day22Test extends munit.FunSuite {
     )
   }
 
-//   50273 too low
-//   64335 too high
-//   116185 too high
-//   189127 not submitted
   test("Part 2") {
     val (pos, dir) = Day22.part2(getInput("day22/input.txt"), doOutput = false)
     val result = 1000 * (pos.y.toInt + 1) + 4 * (pos.x.toInt + 1) + dir
