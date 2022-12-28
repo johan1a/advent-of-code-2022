@@ -6,42 +6,24 @@ import scala.collection.mutable.{Queue, Map}
 
 object Day24 {
 
-  var i = 0
-
-  val large = 1000000000
+  case class Blizzard(dir: Char, pos: Vec2)
 
   def part1(input: Seq[String]): Int = {
-    i = 0
     val (blizzards, walls) = parse(input)
-
-    var pos = Vec2(1, 0)
-    val min = Vec2(1, 1)
-    val max = Vec2(input.head.size, input.size)
+    var startPos = Vec2(1, 0)
     var target = Vec2(input.head.size - 2, input.size - 1)
 
-    val width = max.x - 2
-    val height = max.y - 2
-
-    val (r, _) = shortest(blizzards, walls, pos, target, max)
-
-    r
+    shortest(blizzards, walls, startPos, target)._1
   }
 
   def part2(input: Seq[String]): Int = {
-    i = 0
     val (blizzards, walls) = parse(input)
-
-    var pos = Vec2(1, 0)
-    val min = Vec2(1, 1)
-    val max = Vec2(input.head.size, input.size)
+    var startPos = Vec2(1, 0)
     var target = Vec2(input.head.size - 2, input.size - 1)
 
-    val width = max.x - 2
-    val height = max.y - 2
-
-    val (r0, b0) = shortest(blizzards, walls, pos, target, max)
-    val (r1, b1) = shortest(b0, walls, target, pos, max)
-    val (r2, _) = shortest(b1, walls, pos, target, max)
+    val (r0, b0) = shortest(blizzards, walls, startPos, target)
+    val (r1, b1) = shortest(b0, walls, target, startPos)
+    val (r2, _) = shortest(b1, walls, startPos, target)
 
     r0 + r1 + r2
   }
@@ -50,23 +32,17 @@ object Day24 {
       startBlizzards: Seq[Blizzard],
       walls: Set[Vec2],
       startPos: Vec2,
-      target: Vec2,
-      maxPos: Vec2
+      target: Vec2
   ): (Int, Seq[Blizzard]) = {
+    val maxPos = Vec2(walls.maxBy(_.x).x + 1, walls.maxBy(_.y).y + 1)
     var states = Set[Vec2](startPos)
     var blizzards = startBlizzards
-
-    val width = maxPos.x - 2
-    val height = maxPos.y - 2
-    val lcm = getLcm(Seq(width.toInt, height.toInt))
     var minutes = 0
+    var result: Option[(Int, Seq[Blizzard])] = None
 
-    while (true) {
+    while (result.isEmpty) {
       minutes += 1
       var newStates = Set[Vec2]()
-
-      assert(i < 1000000)
-      i += 1
 
       blizzards = moveBlizzards(blizzards, maxPos)
       val blizzardPositions = blizzards.map(_.pos).toSet
@@ -75,29 +51,22 @@ object Day24 {
         if (!blizzardPositions.contains(pos)) {
           newStates = newStates + pos
         }
-        var nn = neighbors(
+        neighbors(
           pos,
           min = Vec2(1, 0),
           includeDiagonals = false
-        )
-        if (pos == Vec2(target.x, target.y - 1)) {
-          nn = target +: nn
-        }
-        nn.foreach { neighbor =>
-          if (
-            neighbor.x < maxPos.x - 1 && neighbor.y < maxPos.y && !walls
-              .contains(neighbor) && !blizzardPositions.contains(neighbor)
-          ) {
+        ).foreach { neighbor =>
+          if (!walls.contains(neighbor) && !blizzardPositions.contains(neighbor)) {
             newStates = newStates + neighbor
             if (neighbor == target) {
-              return (minutes, blizzards)
+              result = Some((minutes, blizzards))
             }
           }
         }
       }
       states = newStates
     }
-    (minutes, blizzards)
+    result.get
   }
 
   def moveBlizzards(blizzards: Seq[Blizzard], maxPos: Vec2) = {
@@ -166,8 +135,6 @@ object Day24 {
     println()
   }
 
-  case class Blizzard(dir: Char, pos: Vec2)
-
   def parse(input: Seq[String]): (Seq[Blizzard], Set[Vec2]) = {
     var walls = Set[Vec2]()
     var blizzards = Seq[Blizzard]()
@@ -181,14 +148,5 @@ object Day24 {
       }
     }
     (blizzards, walls)
-  }
-
-  def getLcm(list: Seq[Int]): Int = list.foldLeft(1: Int) { (a, b) =>
-    b * a / Stream
-      .iterate((a, b)) { case (x, y) => (y, x % y) }
-      .dropWhile(_._2 != 0)
-      .head
-      ._1
-      .abs
   }
 }
